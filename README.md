@@ -1,0 +1,1 @@
+# ia-didactica-core
