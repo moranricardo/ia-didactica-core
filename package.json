@@ -5,7 +5,8 @@
   "dependencies": {
     "@google/generative-ai": "^0.21.0",
     "@octokit/rest": "^22.0.1",
-    "octokit": "^5.0.5"
+    "octokit": "^5.0.5",
+    "zod": "^4.4.3"
   },
   "description": "Ecosistema de IA Didáctica Autónoma v1.0.",
   "main": "main.js",
