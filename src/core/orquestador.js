@@ -1,36 +1,41 @@
 import { TelemetryHeart } from "./TelemetryHeart.js";
+import { GeminiClient } from "./GeminiClient.js";
 
 const heart = new TelemetryHeart();
+const gemini = new GeminiClient();
 
 async function ejecutarOrquestador() {
   const nombreAgente = "AgenteCritico";
-  const temaActual = "Arquitectura de Software";
+  const temaActual = "Inyección de dependencias en arquitecturas limpias";
 
   try {
-    // 1. Avisar que el agente inició
+    // 1. Reportar inicio
     await heart.pulse(nombreAgente, "running", { 
-      tarea: "Generando lección",
+      tarea: "Inferencia IA",
       tema: temaActual 
     });
+    console.log(`\n[Orquestador] ${nombreAgente} consultando a Gemini sobre: "${temaActual}"...`);
 
-    console.log(`\n[Orquestador] Iniciando trabajo de ${nombreAgente}...`);
-    
-    // Simulación del trabajo del agente (ej. llamada a Gemini)
-    await new Promise(resolve => setTimeout(resolve, 2500)); 
+    // 2. Ejecutar inferencia midiendo el tiempo
+    const inicio = Date.now();
+    const resultado = await gemini.generarLeccion(temaActual);
+    const tiempoInferencia = Date.now() - inicio;
 
-    // 2. Avisar que terminó con éxito
+    console.log(`\n📖 Respuesta de Gemini:\n${resultado.texto}\n`);
+
+    // 3. Reportar éxito con métricas dinámicas
     await heart.pulse(nombreAgente, "idle", { 
       aprobado: true,
-      ultimaAccion: "Lección completada"
+      ultimaAccion: "Lección generada",
+      tokensUsados: resultado.tokens,
+      tiempoMs: tiempoInferencia
     });
-    console.log(`[Orquestador] Trabajo de ${nombreAgente} finalizado exitosamente.\n`);
+    console.log(`[Orquestador] Trabajo finalizado. Telemetría enviada a GitHub.\n`);
 
   } catch (error) {
-    // 3. Registrar fallas
-    await heart.pulse(nombreAgente, "error", { 
-      error: error.message 
-    });
-    console.error(`[Orquestador] Falla crítica en ${nombreAgente}:`, error);
+    // 4. Reportar fallo
+    await heart.pulse(nombreAgente, "error", { error: error.message });
+    console.error(`🔴 [Orquestador] Falla crítica:`, error);
   }
 }
 
