@@ -1,15 +1,20 @@
 export class GeminiClient {
   constructor() {
-    this.apiKey = process.env.GEMINI_API_KEY;
-    if (!this.apiKey) {
-      console.warn("⚠️ [GeminiClient] No se detectó GEMINI_API_KEY. Operando en modo MOCK.");
+    this.apiKey = process.env.GEMINI_API_KEY || "";
+    // Verificación estricta: si no empieza con AIzaSy, es MOCK.
+    this.isMock = !this.apiKey.startsWith("AIzaSy");
+    
+    if (this.isMock) {
+      console.warn("⚠️ [GeminiClient] Clave real no detectada. Activando modo MOCK (Sin costo).");
     }
   }
 
   async generarLeccion(tema) {
-    if (!this.apiKey) {
+    if (this.isMock) {
+      // Simulación asíncrona ligera para imitar el retardo de red
+      await new Promise(resolve => setTimeout(resolve, 800));
       return { 
-        texto: `[MOCK] Lección simulada sobre ${tema}. Para contenido real, configura GEMINI_API_KEY.`, 
+        texto: `[MOCK LOCAL] Explicación simulada sobre: ${tema}. Todo funcionando sin gastar API.`, 
         tokens: 0 
       };
     }
