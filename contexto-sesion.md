@@ -2,8 +2,9 @@
 - **App:** Termux
 - **Protocolo:** Inyección directa (`~/ia-work` + `inject.sh`)
 - **Estado actual:**
-    - `TelemetryHeart.js` inyectado y FUNCIONANDO con la API real.
-    - SSoT base `telemetry/state.json` respondiendo pulsos.
-    - `AgenteAuditor.js` inyectado para reemplazar el legacy de Gerrit.
+    - Arquitectura Serverless completada.
+    - `TelemetryHeart.js` y `AgenteAuditor.js` FUNCIONANDO en producción.
+    - `GeminiClient.js` integrado con fallback de seguridad MOCK.
+    - Migración completada: Legacy `auditoria_gerrit.cjs` eliminado de Termux.
 - **Próximo paso:**
-    - Integrar el módulo de IA (GeminiClient) con este ecosistema para que los agentes ejecuten tareas reales.
+    - Escalar la flota: Añadir nuevos agentes o conectar flujos reales de trabajo.
