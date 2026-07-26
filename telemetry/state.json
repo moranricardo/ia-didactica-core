@@ -1,11 +1,11 @@
 {
-  "lastPulse": "2026-07-26T21:27:53.794Z",
+  "lastPulse": "2026-07-26T21:37:50.160Z",
   "agents": {
     "AgenteCritico": {
-      "status": "idle",
-      "lastPulse": "2026-07-26T21:27:53.793Z",
-      "aprobado": true,
-      "ultimaAccion": "Lección completada"
+      "status": "running",
+      "lastPulse": "2026-07-26T21:37:50.140Z",
+      "tarea": "Inferencia IA",
+      "tema": "Inyección de dependencias en arquitecturas limpias"
     }
   }
 }
