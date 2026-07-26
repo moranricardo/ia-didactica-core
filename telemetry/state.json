@@ -1,11 +1,10 @@
 {
-  "lastPulse": "2026-07-26T21:37:50.160Z",
+  "lastPulse": "2026-07-26T21:37:52.074Z",
   "agents": {
     "AgenteCritico": {
-      "status": "running",
-      "lastPulse": "2026-07-26T21:37:50.140Z",
-      "tarea": "Inferencia IA",
-      "tema": "Inyección de dependencias en arquitecturas limpias"
+      "status": "error",
+      "lastPulse": "2026-07-26T21:37:52.074Z",
+      "error": "Fallo en la API de Gemini: 400 Bad Request"
     }
   }
 }
