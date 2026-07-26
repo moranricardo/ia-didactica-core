@@ -5,37 +5,42 @@ const heart = new TelemetryHeart();
 const gemini = new GeminiClient();
 
 async function ejecutarOrquestador() {
-  const nombreAgente = "AgenteCritico";
-  const temaActual = "Inyección de dependencias en arquitecturas limpias";
+  const temaActual = "Microservicios vs Monolitos";
+
+  console.log(`\n🚀 [Orquestador] Iniciando flujo de trabajo multi-agente...\n`);
 
   try {
-    // 1. Reportar inicio
-    await heart.pulse(nombreAgente, "running", { 
-      tarea: "Inferencia IA",
-      tema: temaActual 
+    // --- AGENTE 1: INVESTIGADOR ---
+    const agente1 = "AgenteInvestigador";
+    await heart.pulse(agente1, "running", { tarea: "Recopilando datos", tema: temaActual });
+    console.log(`[${agente1}] Investigando: "${temaActual}"...`);
+    
+    const resultadoInvestigacion = await gemini.generarLeccion(temaActual);
+    
+    await heart.pulse(agente1, "idle", { 
+      aprobado: true, 
+      tokensUsados: resultadoInvestigacion.tokens 
     });
-    console.log(`\n[Orquestador] ${nombreAgente} consultando a Gemini sobre: "${temaActual}"...`);
+    console.log(`✅ [${agente1}] Investigación completada.\n`);
 
-    // 2. Ejecutar inferencia midiendo el tiempo
-    const inicio = Date.now();
-    const resultado = await gemini.generarLeccion(temaActual);
-    const tiempoInferencia = Date.now() - inicio;
-
-    console.log(`\n📖 Respuesta de Gemini:\n${resultado.texto}\n`);
-
-    // 3. Reportar éxito con métricas dinámicas
-    await heart.pulse(nombreAgente, "idle", { 
+    // --- AGENTE 2: REDACTOR ---
+    const agente2 = "AgenteRedactor";
+    await heart.pulse(agente2, "running", { tarea: "Formateando contenido" });
+    console.log(`[${agente2}] Procesando la investigación para la lección final...`);
+    
+    // Simulamos un pequeño trabajo de formateo
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    await heart.pulse(agente2, "idle", { 
       aprobado: true,
-      ultimaAccion: "Lección generada",
-      tokensUsados: resultado.tokens,
-      tiempoMs: tiempoInferencia
+      ultimaAccion: "Lección empaquetada"
     });
-    console.log(`[Orquestador] Trabajo finalizado. Telemetría enviada a GitHub.\n`);
+    console.log(`✅ [${agente2}] Redacción finalizada.\n`);
+
+    console.log(`🎉 [Orquestador] Flujo de trabajo completado exitosamente.`);
 
   } catch (error) {
-    // 4. Reportar fallo
-    await heart.pulse(nombreAgente, "error", { error: error.message });
-    console.error(`🔴 [Orquestador] Falla crítica:`, error);
+    console.error(`🔴 [Orquestador] Falla crítica en la cadena de mando:`, error);
   }
 }
 
