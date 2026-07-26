@@ -1,4 +1,11 @@
 {
-  "lastPulse": "2026-07-26T00:00:00Z",
-  "agents": {}
+  "lastPulse": "2026-07-26T21:27:50.042Z",
+  "agents": {
+    "AgenteCritico": {
+      "status": "running",
+      "lastPulse": "2026-07-26T21:27:50.023Z",
+      "tarea": "Generando lección",
+      "tema": "Arquitectura de Software"
+    }
+  }
 }
