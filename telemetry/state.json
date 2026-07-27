@@ -1,5 +1,5 @@
 {
-  "lastPulse": "2026-07-26T21:46:25.495Z",
+  "lastPulse": "2026-07-27T01:44:45.578Z",
   "agents": {
     "AgenteCritico": {
       "status": "idle",
@@ -8,6 +8,12 @@
       "ultimaAccion": "Lección generada",
       "tokensUsados": 0,
       "tiempoMs": 803
+    },
+    "AgenteInvestigador": {
+      "status": "running",
+      "lastPulse": "2026-07-27T01:44:45.560Z",
+      "tarea": "Recopilando datos",
+      "tema": "Microservicios vs Monolitos"
     }
   }
 }
