@@ -1,5 +1,5 @@
 {
-  "lastPulse": "2026-07-27T01:49:58.732Z",
+  "lastPulse": "2026-07-27T01:49:59.616Z",
   "agents": {
     "AgenteCritico": {
       "status": "idle",
@@ -14,6 +14,11 @@
       "lastPulse": "2026-07-27T01:49:58.732Z",
       "aprobado": true,
       "tokensUsados": 0
+    },
+    "AgenteRedactor": {
+      "status": "running",
+      "lastPulse": "2026-07-27T01:49:59.616Z",
+      "tarea": "Formateando contenido"
     }
   }
 }
