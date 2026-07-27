@@ -1,0 +1,44 @@
+name: IA Didactica Cloud Worker
+
+on:
+  workflow_dispatch:
+    inputs:
+      tema:
+        description: 'Tema de la lección'
+        required: true
+        default: 'Arquitectura de Microservicios'
+
+jobs:
+  procesar:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout del repositorio
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Instalar dependencias
+        run: npm install
+
+      - name: Ejecutar motor de lección
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: |
+          node -e '
+            import("./src/core/GeminiClient.js").then(async ({ GeminiClient }) => {
+              const client = new GeminiClient();
+              const res = await client.generarTexto("Explica sobre ${{ github.event.inputs.tema }} a nivel avanzado");
+              console.log("Resultado obtenido:", res.texto);
+            });
+          '
+
+      - name: Sincronizar cambios en GitHub
+        run: |
+          git config --global user.name "Bot Cloud Worker"
+          git config --global user.email "bot@users.noreply.github.com"
+          git add .
+          git commit -m "chore(cloud): generacion automatica de ${{ github.event.inputs.tema }}" || exit 0
+          git push
