@@ -1,5 +1,5 @@
 {
-  "lastPulse": "2026-07-27T01:49:59.616Z",
+  "lastPulse": "2026-07-27T01:50:01.430Z",
   "agents": {
     "AgenteCritico": {
       "status": "idle",
@@ -16,9 +16,10 @@
       "tokensUsados": 0
     },
     "AgenteRedactor": {
-      "status": "running",
-      "lastPulse": "2026-07-27T01:49:59.616Z",
-      "tarea": "Formateando contenido"
+      "status": "idle",
+      "lastPulse": "2026-07-27T01:50:01.430Z",
+      "aprobado": true,
+      "ultimaAccion": "Lección empaquetada"
     }
   }
 }
