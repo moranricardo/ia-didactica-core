@@ -1,5 +1,5 @@
 {
-  "lastPulse": "2026-07-27T01:49:56.603Z",
+  "lastPulse": "2026-07-27T01:49:58.732Z",
   "agents": {
     "AgenteCritico": {
       "status": "idle",
@@ -10,10 +10,10 @@
       "tiempoMs": 803
     },
     "AgenteInvestigador": {
-      "status": "running",
-      "lastPulse": "2026-07-27T01:49:56.524Z",
-      "tarea": "Recopilando datos",
-      "tema": "Microservicios vs Monolitos"
+      "status": "idle",
+      "lastPulse": "2026-07-27T01:49:58.732Z",
+      "aprobado": true,
+      "tokensUsados": 0
     }
   }
 }
