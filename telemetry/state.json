@@ -1,5 +1,5 @@
 {
-  "lastPulse": "2026-07-27T02:27:55.806Z",
+  "lastPulse": "2026-07-27T02:27:57.403Z",
   "agents": {
     "AgenteCritico": {
       "status": "idle",
@@ -15,9 +15,9 @@
       "tokensUsados": 0
     },
     "AgenteRedactor": {
-      "status": "running",
-      "lastPulse": "2026-07-27T02:27:55.806Z",
-      "tarea": "Escribiendo lecciones/docker-vs-podman.md"
+      "status": "idle",
+      "lastPulse": "2026-07-27T02:27:57.403Z",
+      "ultimaAccion": "lecciones/docker-vs-podman.md"
     }
   }
 }
