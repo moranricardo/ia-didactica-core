@@ -1,46 +1,41 @@
 import { TelemetryHeart } from "./TelemetryHeart.js";
 import { GeminiClient } from "./GeminiClient.js";
+import { AgenteRedactor } from "./AgenteRedactor.js";
 
 const heart = new TelemetryHeart();
 const gemini = new GeminiClient();
+const redactor = new AgenteRedactor();
 
 async function ejecutarOrquestador() {
   const temaActual = "Microservicios vs Monolitos";
-
-  console.log(`\n🚀 [Orquestador] Iniciando flujo de trabajo multi-agente...\n`);
+  console.log(`\n🚀 [Orquestador] Iniciando flujo multi-agente de escritura...\n`);
 
   try {
-    // --- AGENTE 1: INVESTIGADOR ---
-    const agente1 = "AgenteInvestigador";
-    await heart.pulse(agente1, "running", { tarea: "Recopilando datos", tema: temaActual });
-    console.log(`[${agente1}] Investigando: "${temaActual}"...`);
+    // --- 1. INVESTIGADOR ---
+    await heart.pulse("AgenteInvestigador", "running", { tema: temaActual });
+    console.log(`[AgenteInvestigador] Investigando: "${temaActual}"...`);
     
-    const resultadoInvestigacion = await gemini.generarLeccion(temaActual);
+    const resultado = await gemini.generarLeccion(temaActual);
     
-    await heart.pulse(agente1, "idle", { 
-      aprobado: true, 
-      tokensUsados: resultadoInvestigacion.tokens 
-    });
-    console.log(`✅ [${agente1}] Investigación completada.\n`);
+    await heart.pulse("AgenteInvestigador", "idle", { tokensUsados: resultado.tokens });
+    console.log(`✅ [AgenteInvestigador] Investigación completada.\n`);
 
-    // --- AGENTE 2: REDACTOR ---
-    const agente2 = "AgenteRedactor";
-    await heart.pulse(agente2, "running", { tarea: "Formateando contenido" });
-    console.log(`[${agente2}] Procesando la investigación para la lección final...`);
+    // --- 2. REDACTOR ---
+    await heart.pulse("AgenteRedactor", "running", { tarea: "Escribiendo .md" });
+    console.log(`[AgenteRedactor] Empaquetando y enviando a GitHub...`);
     
-    // Simulamos un pequeño trabajo de formateo
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    const contenidoMarkdown = `# Lección: ${temaActual}\n\n${resultado.texto}\n\n---\n*Generado automáticamente por la flota de IA Didáctica.*`;
+    const rutaArchivo = "lecciones/microservicios-vs-monolitos.md";
     
-    await heart.pulse(agente2, "idle", { 
-      aprobado: true,
-      ultimaAccion: "Lección empaquetada"
-    });
-    console.log(`✅ [${agente2}] Redacción finalizada.\n`);
+    await redactor.redactarYGuardar(temaActual, contenidoMarkdown, rutaArchivo);
+    
+    await heart.pulse("AgenteRedactor", "idle", { ultimaAccion: rutaArchivo });
+    console.log(`✅ [AgenteRedactor] Redacción finalizada.\n`);
 
-    console.log(`🎉 [Orquestador] Flujo de trabajo completado exitosamente.`);
+    console.log(`🎉 [Orquestador] Ciclo completado. Todo sincronizado en GitHub.`);
 
   } catch (error) {
-    console.error(`🔴 [Orquestador] Falla crítica en la cadena de mando:`, error);
+    console.error(`🔴 [Orquestador] Falla crítica:`, error);
   }
 }
 
