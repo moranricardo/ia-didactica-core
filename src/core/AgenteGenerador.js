@@ -2,80 +2,53 @@ import { GeminiClient } from './GeminiClient.js';
 
 export class AgenteGenerador {
   constructor(geminiClient = null, constitucion = '') {
-    this.llm = geminiClient || new GeminiClient();
-    this.constitucion = constitucion || `Tono: profesional y cercano. Estructura: Definición -> Conceptos Clave -> Ejemplo Práctico con código -> Ventajas/Desafíos. Máx 900 palabras.`;
+    this.client = geminiClient || new GeminiClient();
+    this.constitucion = constitucion?.trim() || 'Claridad conceptual, ejemplo práctico con código, resumen accionable.';
   }
 
-  _construirPrompt(tema, contextoUsuario) {
-    const nivel = contextoUsuario.nivel || 'intermedio';
-    const audiencia = contextoUsuario.audiencia || 'Ingenieros de Software / DevOps';
-    const objetivo = contextoUsuario.objetivo || `Comprender ${tema} a nivel práctico`;
-
+  _buildPrompt(tema, contexto) {
     return `
-ROL: Eres un arquitecto de software senior y profesor universitario experto en crear contenido didáctico de alto rigor técnico.
-
-TAREA: Escribe una lección técnica completa sobre:
+ROL: Arquitecto de software senior y docente experto en ${tema}.
+OBJETIVO: Lección técnica en Markdown que un junior pueda implementar hoy.
 TEMA: "${tema}"
-
-PARAMETROS DIDACTICOS:
-- Nivel: ${nivel}
-- Audiencia: ${audiencia}
-- Objetivo de aprendizaje: ${objetivo}
-- Contexto extra: ${JSON.stringify(contextoUsuario)}
-
-CONSTITUCION PEDAGOGICA (OBLIGATORIA - Si la violas, la lección será rechazada):
----
+CONTEXTO: ${JSON.stringify(contexto, null, 2)}
+CONSTITUCION (OBLIGATORIA):
 ${this.constitucion}
----
-
-FORMATO DE SALIDA OBLIGATORIO (Markdown):
-Lección Técnica: [Título]
-**Nivel:** [nivel] | **Audiencia:** [audiencia]
-**Objetivo:** [objetivo]
-
-1. Introducción (contexto y por qué importa)
-2. Conceptos Clave (con fórmulas si aplica, usa LaTeX)
-3. Ventajas y Desafíos (tabla comparativa)
-4. Ejemplo Práctico (código ejecutable, con comentarios)
-5. Conclusión y siguiente paso
-
-RESTRICCIONES ANTI-ALUCINACION:
-- No inventes versiones, librerías o comandos que no existan.
-- Si no estás seguro de un dato, dilo explícitamente.
-- Cita solo ejemplos que puedas codificar.
-- Genera ÚNICAMENTE el markdown de la lección, sin frases tipo "Aquí tienes la lección" o "Espero que te guste".
 `.trim();
   }
 
   async generarBorrador(tema, contextoUsuario = {}) {
-    if (!tema || tema.trim().length < 3) {
-      throw new Error("[AgenteGenerador] Tema inválido o muy corto.");
-    }
+    if (!tema?.trim()) throw new Error('[AgenteGenerador] tema requerido');
 
-    console.log(`[AgenteGenerador] ✍️ Redactando: "${tema}" | Nivel: ${contextoUsuario.nivel || 'intermedio'}`);
-
-    const prompt = this._construirPrompt(tema, contextoUsuario);
-    const inicio = Date.now();
+    console.log(`[AgenteGenerador] ✍️ Redactando: "${tema}" | Nivel: ${contextoUsuario.nivel || 'avanzado'}`);
+    const prompt = this._buildPrompt(tema, contextoUsuario);
 
     try {
-      const textoCrudo = await this.llm.generarTexto(prompt);
-      const texto = typeof textoCrudo === 'string' ? textoCrudo : (textoCrudo.texto || textoCrudo.content || '');
-
-      if (!texto || texto.length < 200) {
-        throw new Error("Respuesta del LLM vacía o demasiado corta (<200 chars)");
+      let raw;
+      // Estrategia de fallback dinámico para soportar tanto Modo Producción como Modo MOCK
+      if (typeof this.client.generarTexto === 'function') {
+        raw = await this.client.generarTexto(prompt);
+      } else if (typeof this.client.generarLeccion === 'function') {
+        raw = await this.client.generarLeccion(tema);
+      } else if (typeof this.client.generateContent === 'function') {
+        raw = await this.client.generateContent({ contents: prompt });
+      } else {
+        throw new Error("El cliente Gemini no expone un método compatible (generarTexto, generarLeccion, generateContent)");
       }
 
-      const duracion = ((Date.now() - inicio) / 1000).toFixed(1);
-      console.log(`[AgenteGenerador] ✅ Borrador OK (${texto.length} chars, ${duracion}s, modelo: ${this.llm.modeloUsado || 'gemini-2.0-flash'})`);
+      const texto = typeof raw === 'string' ? raw : (raw.texto || raw.text || raw.content || JSON.stringify(raw));
+      
+      if (!texto || texto.length < 50) throw new Error(`Respuesta LLM demasiado corta o nula`);
+
+      console.log(`[AgenteGenerador] ✅ Borrador OK (${texto.length} chars)`);
 
       return {
-        texto,
-        modeloUsado: this.llm.modeloUsado || 'gemini-2.0-flash',
-        tokensAprox: Math.ceil(texto.length / 4),
         tema,
+        texto: texto.trim(),
+        modeloUsado: raw.modeloUsado || raw.modelo || this.client.modeloUsado || 'gemini-mock',
+        tokensAprox: raw.tokensAprox || raw.tokens || Math.ceil(texto.length / 4),
         timestamp: new Date().toISOString()
       };
-
     } catch (error) {
       console.error(`[AgenteGenerador] ❌ Falla generando "${tema}":`, error.message);
       throw error;
