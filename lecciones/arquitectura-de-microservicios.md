@@ -1,6 +1,6 @@
 # Arquitectura de Microservicios
 
-> Modelo: gemini-mock | 2026-07-27T19:03:22.477Z
+> Modelo: gemini-mock | 2026-07-27T19:06:17.657Z
 
 [MOCK LOCAL] Explicación simulada sobre: Arquitectura de Microservicios. Todo funcionando sin gastar API.
 
