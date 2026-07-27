@@ -1,44 +1,35 @@
-import { Octokit } from "@octokit/rest";
+import fs from 'fs/promises';
+import path from 'path';
+import { exec } from 'child_process';
+import util from 'util';
+
+const execAsync = util.promisify(exec);
 
 export class AgenteRedactor {
-  constructor() {
-    this.token = process.env.GITHUB_TOKEN;
-    this.octokit = this.token ? new Octokit({ auth: this.token }) : null;
-    this.owner = "moranricardo";
-    this.repo = "ia-didactica-core";
-  }
-
-  async redactarYGuardar(tema, contenido, rutaArchivo) {
-    if (!this.octokit) {
-      console.log(`⚠️ [AgenteRedactor] MOCK LOCAL - Se guardaría en ${rutaArchivo}:\n${contenido}`);
-      return;
-    }
-
-    const contentEncoded = Buffer.from(contenido).toString('base64');
-    let sha = null;
-
+  async redactarYGuardar(tema, contenido, rutaRelativa) {
     try {
-      // Intentamos leer el archivo para obtener su SHA (por si ya existe y vamos a sobrescribir)
-      const { data } = await this.octokit.repos.getContent({
-        owner: this.owner,
-        repo: this.repo,
-        path: rutaArchivo,
-      });
-      sha = data.sha;
+      console.log(`[AgenteRedactor] 📝 Escribiendo buffer local en: ${rutaRelativa}`);
+      
+      const rutaAbsoluta = path.resolve(process.cwd(), rutaRelativa);
+      await fs.mkdir(path.dirname(rutaAbsoluta), { recursive: true });
+      await fs.writeFile(rutaAbsoluta, contenido, 'utf-8');
+
+      console.log(`[AgenteRedactor] ☁️ Ejecutando push automático a GitHub...`);
+      
+      // Auto-commit y push a la rama principal
+      await execAsync(`git add "${rutaRelativa}"`);
+      await execAsync(`git commit -m "docs(lecciones): generacion automatica de '${tema}' [ia-auto]"`);
+      await execAsync(`git push origin main`);
+
+      console.log(`[AgenteRedactor] ✅ Lección consolidada en la nube de forma segura.`);
+      return true;
     } catch (error) {
-      // El error 404 es esperado si el archivo es completamente nuevo
-      if (error.status !== 404) throw error;
+      if (error.stdout?.includes("nothing to commit") || error.stderr?.includes("nothing to commit")) {
+         console.log(`[AgenteRedactor] ⚠️ El archivo ya estaba sincronizado o sin cambios.`);
+         return true;
+      }
+      console.error(`[AgenteRedactor] ❌ Error en sincronización con GitHub:`, error.message);
+      return false;
     }
-
-    await this.octokit.repos.createOrUpdateFileContents({
-      owner: this.owner,
-      repo: this.repo,
-      path: rutaArchivo,
-      message: `docs(lecciones): generar leccion sobre ${tema} [ia-auto]`,
-      content: contentEncoded,
-      sha: sha
-    });
-
-    console.log(`✅ [AgenteRedactor] Archivo escrito en GitHub: ${rutaArchivo}`);
   }
 }
