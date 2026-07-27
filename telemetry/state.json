@@ -1,5 +1,5 @@
 {
-  "lastPulse": "2026-07-27T02:27:52.810Z",
+  "lastPulse": "2026-07-27T02:27:54.993Z",
   "agents": {
     "AgenteCritico": {
       "status": "idle",
@@ -10,9 +10,9 @@
       "tiempoMs": 803
     },
     "AgenteInvestigador": {
-      "status": "running",
-      "lastPulse": "2026-07-27T02:27:52.789Z",
-      "tema": "Docker vs Podman"
+      "status": "idle",
+      "lastPulse": "2026-07-27T02:27:54.993Z",
+      "tokensUsados": 0
     },
     "AgenteRedactor": {
       "status": "idle",
