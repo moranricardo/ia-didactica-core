@@ -11,7 +11,7 @@ url_consulta: "https://dem.colmex.mx/app/Busqueda/BuscarEnDiccionario?q=Sintetiz
 # Módulo Didáctico: Análisis Lexicográfico de "Sintetizar"
 
 ## 📚 Definición Base (DEM Colmex)
-> *Espacio reservado para la extracción automatizada de la definición de 'Sintetizar'.*
+> **Definición DEM:** DICCIONARIO DEL ESPAÑOL DE MÉXICO
 > **Consulta directa:** [Ver entrada en el DEM](https://dem.colmex.mx/app/Busqueda/BuscarEnDiccionario?q=Sintetizar)
 
 ## ⚙️ Parámetros de Integración
