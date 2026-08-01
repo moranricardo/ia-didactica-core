@@ -1,36 +1,21 @@
 # Arquitectura de Microservicios
 
-> Modelo: gemini-3.5-flash | 2026-07-28T05:57:03.254Z
+> Modelo: gemini-3.5-flash | 2026-08-01T08:58:09.794Z
 
-La arquitectura de microservicios divide una aplicación compleja en un conjunto de servicios pequeños, autónomos y desplegables de forma independiente. Para que tu arquitectura sea robusta, debes aplicar el patrón **Database-per-Service**: cada microservicio debe ser dueño de sus propios datos. Compartir una base de datos entre servicios destruye el desacoplamiento.
+La arquitectura de microservicios es un estilo de diseño donde una aplicación se estructura como un conjunto de servicios autónomos, altamente cohesivos y acoplados de forma vaga. Cada microservicio se centra en una única capacidad de negocio, se despliega de manera independiente y gestiona su propia base de datos (patrón *Database-per-Service*), comunicándose con otros mediante protocolos ligeros como HTTP/REST o gRPC.
 
-### Ejemplo de implementación
+### El Ejemplo
 
-Imagina que estás construyendo un e-commerce. Tienes el `OrderService` (puerto 3001) y el `InventoryService` (puerto 3002). En lugar de hacer un `JOIN` directo a la base de datos de inventario desde el servicio de órdenes, debes comunicarte a través de API (HTTP/gRPC).
+Para implementar este patrón hoy, divide tu backend en dos proyectos independientes:
 
-Aquí tienes cómo implementarlo hoy mismo en Node.js:
+1. **Servicio de Usuarios (Puerto 3001):** Desarrollado en Node.js/Express, conectado a una base de datos PostgreSQL. Expone el endpoint `GET /users/:id`.
+2. **Servicio de Pedidos (Puerto 3002):** Desarrollado en Python/FastAPI, conectado a MongoDB. 
 
-javascript
-// OrderService - crearOrden.js
-async function crearOrden(clienteId, productoId, cantidad) {
-  // 1. Consultamos al servicio de Inventario mediante su API
-  const respuesta = await fetch(`http://inventory-service:3002/productos/${productoId}/validar`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ cantidad })
-  });
-  
-  const { disponible } = await respuesta.json();
-  if (!disponible) throw new Error("Sin stock disponible");
+Cuando el Servicio de Pedidos necesita validar a un comprador, realiza una petición HTTP interna a `http://localhost:3001/users/:id`. Si el servicio de pedidos falla por alta demanda, los usuarios aún pueden iniciar sesión y navegar por la plataforma sin interrupciones.
 
-  // 2. Si hay stock, registramos la orden en nuestra base de datos local
-  return baseDatosOrdenes.save({ clienteId, productoId, cantidad, estado: 'CREADA' });
-}
+### La Analogía
 
-
-### Analogía
-
-Piensa en un centro comercial con un patio de comidas. El puesto de hamburguesas y el de sushi no comparten la misma nevera ni los mismos cocineros. Si el puesto de hamburguesas necesita aguacate del puesto de sushi, no entra a su cocina a tomarlo; se lo pide formalmente al encargado. Cada negocio funciona de manera autónoma; si uno cierra por mantenimiento, el otro sigue vendiendo.
+Imagina un gran barco de carga. Si el casco fuera un único espacio abierto (monolito) y se produjera una vía de agua, el barco entero se hundiría. Los microservicios son como los compartimentos estancos de un barco moderno. Si el agua entra en la sección de carga, esa zona se aísla herméticamente; el resto de los compartimentos permanecen secos, el barco mantiene la flotabilidad y sigue navegando.
 
 ¿Te ha quedado claro el concepto?
 
@@ -43,8 +28,8 @@ Piensa en un centro comercial con un patio de comidas. El puesto de hamburguesas
 **Bot Custodio:** @ricardomoranbot
 **Huella de Dispositivo:** `chrome-mobile-es-419`
 **Origen:** IA-Didactica-Core Cloud Pipeline
-**Generado:** 2026-07-28T05:57:03Z
-**Workflow URL:** https://github.com/moranricardo/ia-didactica-core/actions/runs/30333171204
+**Generado:** 2026-08-01T08:58:10Z
+**Workflow URL:** https://github.com/moranricardo/ia-didactica-core/actions/runs/30692795090
 **Licencia:** MIT + Atribución Obligatoria a Ricardo Moran
 
 > Este documento está firmado digitalmente en la nube. Cualquier clon o uso sin esta huella es una copia no autorizada.
@@ -55,7 +40,7 @@ Piensa en un centro comercial con un patio de comidas. El puesto de hamburguesas
   "bot": "ricardomoranbot",
   "huella": "chrome-mobile-es-419",
   "archivo": "lecciones/arquitectura-de-microservicios.md",
-  "timestamp": "2026-07-28T05:57:03Z",
-  "runUrl": "https://github.com/moranricardo/ia-didactica-core/actions/runs/30333171204"
+  "timestamp": "2026-08-01T08:58:10Z",
+  "runUrl": "https://github.com/moranricardo/ia-didactica-core/actions/runs/30692795090"
 }
 ```
