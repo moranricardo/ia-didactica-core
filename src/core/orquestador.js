@@ -6,6 +6,7 @@ import { AgenteGenerador } from "./AgenteGenerador.js";
 import { AgenteCritico } from "./AgenteCritico.js";
 import { AgenteRedactor } from "./AgenteRedactor.js";
 
+ HEAD
 async function cargarConstitucion() {
   try {
     const p = path.resolve(process.cwd(), 'constitucion.txt');
@@ -13,6 +14,60 @@ async function cargarConstitucion() {
     return txt.trim().length > 50 ? txt : null;
   } catch {
     return null;
+
+const heart = new TelemetryHeart();
+const gemini = new GeminiClient();
+const redactor = new AgenteRedactor();
+
+async function ejecutarOrquestador() {
+  // Capturamos el argumento de la terminal
+  const temaArg = process.argv[2];
+  
+  if (!temaArg) {
+    console.error("🔴 [Error] Debes proporcionar un tema entre comillas.");
+    console.log("👉 Ejemplo: node src/core/orquestador.js \"Docker vs Podman\"");
+    process.exit(1);
+  }
+
+  const temaActual = temaArg;
+  
+  // Normalizamos el string para crear un nombre de archivo válido
+  const nombreArchivo = temaActual
+    .toLowerCase()
+    .normalize("NFD").replace(/[\u0300-\u036f]/g, "") // Quita acentos
+    .replace(/[^a-z0-9]+/g, '-') // Cambia espacios y símbolos por guiones
+    .replace(/(^-|-$)/g, ''); // Limpia guiones al inicio o final
+
+  const rutaArchivo = `lecciones/${nombreArchivo}.md`;
+
+  console.log(`\n🚀 [Orquestador] Iniciando flujo multi-agente para: "${temaActual}"\n`);
+
+  try {
+    // --- 1. INVESTIGADOR ---
+    await heart.pulse("AgenteInvestigador", "running", { tema: temaActual });
+    console.log(`[AgenteInvestigador] Investigando...`);
+    
+    const resultado = await gemini.generarLeccion(temaActual);
+    
+    await heart.pulse("AgenteInvestigador", "idle", { tokensUsados: resultado.tokens });
+    console.log(`✅ [AgenteInvestigador] Investigación completada.\n`);
+
+    // --- 2. REDACTOR ---
+    await heart.pulse("AgenteRedactor", "running", { tarea: `Escribiendo ${rutaArchivo}` });
+    console.log(`[AgenteRedactor] Empaquetando y enviando a GitHub...`);
+    
+    const contenidoMarkdown = `# Lección: ${temaActual}\n\n${resultado.texto}\n\n---\n*Generado automáticamente por la flota de IA Didáctica.*`;
+    
+    await redactor.redactarYGuardar(temaActual, contenidoMarkdown, rutaArchivo);
+    
+    await heart.pulse("AgenteRedactor", "idle", { ultimaAccion: rutaArchivo });
+    console.log(`✅ [AgenteRedactor] Redacción finalizada en ${rutaArchivo}.\n`);
+
+    console.log(`🎉 [Orquestador] Ciclo completado. Todo sincronizado en GitHub.`);
+
+  } catch (error) {
+    console.error(`🔴 [Orquestador] Falla crítica:`, error);
+ fb315fe (feat(core): actualizar validacion de modo mock en GeminiClient)
   }
 }
 
