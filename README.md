@@ -16,3 +16,4 @@ Este repositorio funciona como la **Fuente Única de Verdad (SSoT)** para el nú
 
 ---
 *IA Didáctica Autónoma: Inferencia Adaptativa y Seguridad Intrínseca.*
+Avance Módulo 3 completado
