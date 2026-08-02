@@ -1,6 +1,6 @@
 # Introducción a Puppeteer
 
-> Modelo: gemini-mock-fallback | 2026-08-02T17:10:33.287Z
+> Modelo: gemini-mock-fallback | 2026-08-02T17:12:41.013Z
 
 # Lección Técnica Generada (Modo Resiliente)
 
