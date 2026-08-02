@@ -4,42 +4,53 @@ export class GeminiClient {
     this.apiKey = process.env.GEMINI_API_KEY || '';
     this.isValidKey = this.apiKey.length > 30 && !this.apiKey.includes('AQUI');
     this.modeloUsado = 'gemini-3.5-flash'; // 👈 Actualizado a tu modelo disponible
+    this.apiKey = process.env.GEMINI_API_KEY || "";
+    this.isMock = !this.apiKey || this.apiKey === "";
   }
 
-  async generarTexto(prompt) {
-    if (!this.isValidKey) {
-      console.warn("⚠️ [GeminiClient] Clave real no detectada o inválida. Activando modo MOCK.");
-      return { 
-        texto: `[MOCK LOCAL] Explicación simulada.`, 
-        modeloUsado: 'gemini-mock', 
-        tokensAprox: 25 
-      };
+  async generarTexto(prompt, intentos = 3) {
+    if (this.isMock) {
+      await new Promise(resolve => setTimeout(resolve, 800));
+      return { texto: `[MOCK LOCAL] Generación simulada para: ${prompt}`, tokens: 0 };
     }
 
-    try {
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/${this.modeloUsado}:generateContent?key=${this.apiKey}`;
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
-      });
+    const url = `https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash:generateContent?key=${this.apiKey}`;
+    const payload = {
+      contents: [{ parts: [{ text: prompt }] }]
+    };
 
-      if (!response.ok) {
-        const err = await response.json();
-        throw new Error(`${err.error?.message || response.statusText}`);
+    for (let i = 1; i <= intentos; i++) {
+      try {
+        const response = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        if (response.status === 503 || response.status === 429) {
+          console.warn(`⚠️ [GeminiClient] Servidor ocupado (${response.status}). Reintento ${i}/${intentos} en 3s...`);
+          await new Promise(resolve => setTimeout(resolve, 3000 * i));
+          continue;
+        }
+
+        if (!response.ok) {
+          const errData = await response.json().catch(() => ({}));
+          throw new Error(errData.error?.message || response.statusText);
+        }
+
+        const data = await response.json();
+        const texto = data.candidates?.[0]?.content?.parts?.[0]?.text || "Sin respuesta del modelo.";
+        const tokens = data.usageMetadata?.totalTokenCount || 0;
+        return { texto, tokens };
+      } catch (err) {
+        if (i === intentos) {
+          console.error("🔴 [GeminiClient] Agotados los reintentos. Activando fallback MOCK.");
+          return {
+            texto: `[FALLBACK MOCK] Contenido generado en contingencia por alta demanda de la API.`,
+            tokens: 0
+          };
+        }
       }
-      
-      const data = await response.json();
-      const texto = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
-      
-      return { 
-        texto, 
-        modeloUsado: this.modeloUsado, 
-        tokensAprox: Math.ceil(texto.length / 4) 
-      };
-    } catch (error) {
-      console.error("[GeminiClient] Error de red o API:", error.message);
-      throw error;
     }
 
     this.apiKey = process.env.GEMINI_API_KEY || "";
@@ -85,5 +96,14 @@ export class GeminiClient {
       tokens: data.usageMetadata?.totalTokenCount || 0
     };
  fb315fe (feat(core): actualizar validacion de modo mock en GeminiClient)
+    return {
+      texto: `[FALLBACK MOCK] Generación por tiempo de espera de la API.`,
+      tokens: 0
+    };
+  }
+
+  async generarLeccion(tema) {
+    const prompt = `Eres un experto tutor técnico. Explica de forma concisa y directa el siguiente tema en un párrafo corto: ${tema}`;
+    return await this.generarTexto(prompt);
   }
 }
