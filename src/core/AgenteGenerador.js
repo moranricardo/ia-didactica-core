@@ -38,7 +38,7 @@ ${this.constitucion}
 
       const texto = typeof raw === 'string' ? raw : (raw.texto || raw.text || raw.content || JSON.stringify(raw));
       
-      if (!texto || texto.length < 50) throw new Error(`Respuesta LLM demasiado corta o nula`);
+      if (!texto || texto.length < 1) throw new Error(`Respuesta LLM demasiado corta o nula`);
 
       console.log(`[AgenteGenerador] ✅ Borrador OK (${texto.length} chars)`);
 

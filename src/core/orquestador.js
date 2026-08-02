@@ -6,7 +6,6 @@ import { AgenteGenerador } from "./AgenteGenerador.js";
 import { AgenteCritico } from "./AgenteCritico.js";
 import { AgenteRedactor } from "./AgenteRedactor.js";
 
- HEAD
 async function cargarConstitucion() {
   try {
     const p = path.resolve(process.cwd(), 'constitucion.txt');
@@ -67,8 +66,13 @@ async function ejecutarOrquestador() {
 
   } catch (error) {
     console.error(`🔴 [Orquestador] Falla crítica:`, error);
- fb315fe (feat(core): actualizar validacion de modo mock en GeminiClient)
   }
+}
+
+
+}
+
+
 }
 
 export async function ejecutarOrquestador(temaCLI) {
