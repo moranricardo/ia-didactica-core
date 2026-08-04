@@ -5,3 +5,4 @@ dump/
 *.tar.gz
 state.json
 logs/
+.env
