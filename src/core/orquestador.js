@@ -1,6 +1,6 @@
 import { consultarCache, guardarEnCache } from "./cache.js";
 import { consultarLocal } from "./consultarLocal.js";
-import { consultarAPICloud } from "./consultarCloud.js";
+import { consultarCloud } from "./consultarCloud.js";
 import { AgenteCritico } from "../agents/AgenteCritico.js";
 
 export async function ejecutarConsulta(prompt) {
@@ -14,7 +14,7 @@ export async function ejecutarConsulta(prompt) {
 
   // 3. Fallback a Nube
   if (!respuestaRaw) {
-    respuestaRaw = await consultarAPICloud(prompt);
+    respuestaRaw = await consultarCloud(prompt);
     fuente = "nube";
   }
 
