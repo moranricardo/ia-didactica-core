@@ -1,48 +1,55 @@
 import express from 'express';
-import { ejecutarLeccion } from './src/core/orquestador.js';
+import consultarCloud from './src/core/consultarCloud.js';
+import despacharAGitHub from './src/core/despachoCloud.js';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
 
-// Endpoint 1: Healthcheck
 app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', timestamp: new Date().toISOString(), service: 'ia-didactica-core' });
+  res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-// Endpoint 2: Generar Lección
 app.post('/api/leccion', async (req, res) => {
-  const { tema, nivel } = req.body;      
+  const { tema, nivel } = req.body;
+
   if (!tema) {
-    return res.status(400).json({ error: 'El campo "tema" es obligatorio en el JSON.' });
+    return res.status(400).json({ success: false, mensaje: 'El campo "tema" es obligatorio.' });
   }
 
-  try {
-    console.log(`\n[API] 📥 Recibiendo petición (POST /api/leccion) -> Tema: "${tema}"`);
-    
-    // Invocamos la función correcta del orquestador
-    const resultado = await ejecutarLeccion(tema, nivel || "intermedio");
+  console.log(`\n[API] 📥 Recibiendo petición -> Tema: "${tema}" | Nivel: "${nivel || 'general'}"`);
 
-    if (resultado.fuente && resultado.fuente !== "error" && resultado.fuente !== "rechazado") {
-      res.status(200).json({
-        success: true,
-        mensaje: `Lección procesada con éxito.`,
-        fuente: resultado.fuente,
-        data: resultado.respuesta,
-        auditoria: resultado.auditoria
-      });
-    } else {
-      res.status(422).json({
-        success: false,
-        mensaje: `Lección rechazada o con error.`,
-        detalle: resultado
-      });
-    }                                       
-  } catch (error) {
-    console.error(`[API] ❌ Error crítico:`, error.message);
-    res.status(500).json({ error: 'Error interno del servidor.', detalle: error.message });
+  const prompt = `Actúa como un tutor pedagógico experto. Genera una lección didáctica y completa sobre el tema: "${tema}". Nivel: ${nivel || 'principiante'}. Incluye ejemplos y una breve autoevaluación al final.`;
+
+  const respuestaIA = await consultarCloud(prompt);
+
+  if (!respuestaIA) {
+    return res.status(500).json({
+      success: false,
+      mensaje: 'Lección rechazada o con error.',
+      detalle: { fuente: 'error', respuesta: 'No se pudo generar una respuesta con las API Keys disponibles.' }
+    });
   }
+
+  // Generar nombre de archivo único para GitHub
+  const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+  const nombreArchivo = `lecciones/${tema.toLowerCase().replace(/[^a-z0-9]/g, '_')}_${timestamp}.md`;
+
+  // Despacho a GitHub (Zero-Disk)
+  const resultadoGitHub = await despacharAGitHub(
+    nombreArchivo,
+    respuestaIA,
+    `feat: nueva lección generada - ${tema}`
+  );
+
+  return res.json({
+    success: true,
+    mensaje: 'Lección procesada con éxito.',
+    fuente: 'nube',
+    github: resultadoGitHub,
+    data: respuestaIA
+  });
 });
 
 app.listen(PORT, () => {
