@@ -20,3 +20,11 @@ Se aborda el concepto solicitado asegurando la estructura pedagógica requerida 
 **Huella:** `chrome-mobile-es-419`
 **Fecha:** 2026-08-22T22:32:42Z
 **Run URL:** https://github.com/moranricardo/ia-didactica-core/actions/runs/32602721744
+
+---
+## 🛡️ Sello de Propiedad Intelectual
+**Propietario:** Ricardo Moran
+**Bot Custodio:** @ricardomoranbot
+**Huella:** `chrome-mobile-es-419`
+**Fecha:** 2026-08-22T22:34:22Z
+**Run URL:** https://github.com/moranricardo/ia-didactica-core/actions/runs/32602801289
