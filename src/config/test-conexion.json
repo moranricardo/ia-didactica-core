@@ -1,0 +1,11 @@
+{
+  "status": "ok",
+  "servicio": "ia-didactica-core",
+  "entorno": "desarrollo",
+  "version": "1.0.0",
+  "latencia_esperada_ms": 10,
+  "verificaciones": {
+    "almacenamiento": "activo",
+    "agentes": "listos"
+  }
+}
