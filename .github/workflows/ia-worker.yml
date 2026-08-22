@@ -1,11 +1,14 @@
 name: IA Didactica Cloud Worker
 
 on:
+  push:
+    branches:
+      - main
   workflow_dispatch:
     inputs:
       tema:
         description: 'Tema de la lección'
-        required: true
+        required: false
         default: 'Arquitectura de Microservicios'
 
 permissions:
@@ -25,7 +28,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'npm'
 
       - name: Instalar dependencias
         run: npm ci || npm install
@@ -36,16 +38,15 @@ jobs:
       - name: Ejecutar motor de lección
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-          TEMA: ${{ inputs.tema }}
+          TEMA: ${{ inputs.tema || 'Arquitectura de Microservicios' }}
         run: node src/core/orquestador.js "$TEMA"
 
       - name: Sello de Propiedad y Blindaje de Autoría
         env:
-          TEMA_INPUT: ${{ inputs.tema }}
+          TEMA_INPUT: ${{ inputs.tema || 'Arquitectura de Microservicios' }}
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: |
           set -e
-          
           export PROPIETARIO="Ricardo Moran"
           export BOT_ID="ricardomoranbot"
           export HUELLA="chrome-mobile-es-419"
