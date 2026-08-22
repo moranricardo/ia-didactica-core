@@ -1,40 +1,46 @@
-import { consultarCache, guardarEnCache } from "./cache.js";
-import { consultarLocal } from "./consultarLocal.js";
-import { consultarCloud } from "./consultarCloud.js";
-import { AgenteCritico } from "../agents/AgenteCritico.js";
+import { GeminiClient } from './geminiClient.js';
+import { WorkspaceCache } from './workspaceCache.js';
+import { TelemetryHeart } from './telemetryHeart.js';
+import { GestorArchivos } from './gestorArchivos.js';
 
-export async function ejecutarConsulta(prompt) {
-  // 1. Revisar Caché
-  const cached = await consultarCache(prompt);
-  if (cached) return { fuente: "cache", respuesta: cached };
+export async function ejecutarOrquestador(tema = "Arquitectura de Microservicios") {
+  console.log(`🚀 [Orquestador] Iniciando procesamiento para: ${tema}`);
+  
+  const cache = new WorkspaceCache();
+  const telemetry = new TelemetryHeart();
+  const gemini = new GeminiClient();
+  const gestor = new GestorArchivos();
 
-  // 2. Intentar Modelo Local
-  let respuestaRaw = await consultarLocal(prompt);
-  let fuente = "local";
+  await telemetry.pulse("orquestador", "running", { tema });
 
-  // 3. Fallback a Nube
-  if (!respuestaRaw) {
-    respuestaRaw = await consultarCloud(prompt);
-    fuente = "nube";
+  // 1. Verificar caché
+  const cachedData = await cache.obtener(tema);
+  if (cachedData) {
+    console.log(`⚡ [Orquestador] Contenido cargado desde caché.`);
+    await gestor.guardarLeccion(tema, cachedData.texto || cachedData, 'md');
+    await telemetry.pulse("orquestador", "success", { tema, origen: "cache" });
+    return cachedData;
   }
 
-  if (!respuestaRaw) {
-    return { fuente: "error", respuesta: "No se pudo generar una respuesta." };
-  }
-
-  // 4. Auditoría Constitucional (AgenteCritico)
-  const auditoria = await AgenteCritico.auditarRespuesta(prompt, respuestaRaw);
-
-  if (auditoria.aprobado) {
-    // Guardar en caché solo respuestas validadas por la constitución
-    await guardarEnCache(prompt, auditoria.respuestaFinal);
-    return { fuente, respuesta: auditoria.respuestaFinal, auditoria: auditoria.observaciones };
-  } else {
-    return { fuente: "rechazado", respuesta: "Respuesta no aprobada por la Evaluación Constitucional.", detalles: auditoria.observaciones };
+  // 2. Generar con Gemini
+  try {
+    const resultado = await gemini.generarLeccion(tema);
+    await cache.guardar(tema, resultado);
+    await gestor.guardarLeccion(tema, resultado.texto, 'md');
+    await telemetry.pulse("orquestador", "success", { tema, origen: "gemini" });
+    return resultado;
+  } catch (error) {
+    console.error(`🔴 [Orquestador] Error durante la ejecución: ${error.message}`);
+    await telemetry.pulse("orquestador", "failed", { tema, error: error.message });
+    throw error;
   }
 }
 
-export async function ejecutarLeccion(tema, nivel = "intermedio") {
-  const promptEspecializado = `Actúa como un tutor pedagógico experto. Genera una lección estructurada sobre: "${tema}" adaptada para nivel ${nivel}. Incluye ejemplos prácticos y una pequeña autoevaluación al final.`;
-  return await ejecutarConsulta(promptEspecializado);
+// Ejecución directa por CLI o GitHub Actions
+if (process.argv[1]?.endsWith('orquestador.js')) {
+  const temaInput = process.argv[2] || "Arquitectura de Microservicios";
+  ejecutarOrquestador(temaInput).catch(err => {
+    console.error("🔴 Error fatal en CLI:", err.message);
+    process.exit(1);
+  });
 }
