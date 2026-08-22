@@ -37,7 +37,7 @@ jobs:
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           TEMA: ${{ inputs.tema }}
-        run: node src/core/orquestador.js "$TEMA" || true
+        run: node src/core/orquestador.js "$TEMA"
 
       - name: Sello de Propiedad y Blindaje de Autoría
         env:
@@ -60,7 +60,7 @@ jobs:
           fi
 
           if [ -z "$ARCHIVO" ] || [ ! -f "$ARCHIVO" ]; then
-            echo "ℹ️ No hay archivos Markdown generados para sellar. Finalizando ejecución limpia."
+            echo "ℹ️ No hay archivos Markdown para sellar."
             exit 0
           fi
 
