@@ -1,24 +1,23 @@
+# 🌐 API de Gestión de Navegadores (docs/browsers-api)
+
+Esta sección documenta la API interna para la descarga, verificación y orquestación de binarios de navegadores headless (Chromium, Firefox) en el entorno de automatización del proyecto.
+
 ---
-sidebar_label: Ìndice
+
+## 📌 Métodos y Referencias Principales
+
+* **installedBrowsers**: Recupera la lista de navegadores instalados en la caché local.
+* **canDownload**: Verifica si una versión/build específica de un navegador está disponible para descarga.
+* **resolveBuildId**: Resuelve etiquetas de versión (como `latest` o `canary`) a un ID de compilación específico.
+* **uninstall**: Elimina versiones obsoletas del directorio de caché para liberar almacenamiento.
+
 ---
 
-# API de Navegadores
+## 🛠️ Configuración de Caché en Entornos Restringidos (ej. Termux / CI)
 
-Documentación de la API de Puppeteer para la gestión de navegadores.
+Al ejecutar procesos de navegador en entornos con recursos limitados o rutas personalizadas, asegúrate de definir la variable de entorno PUPPETEER_CACHE_DIR:
 
-## Funciones y Clases
+export PUPPETEER_CACHE_DIR="$HOME/.cache/puppeteer"
 
-* [Browser](./browsers.browser.md)
-* [BrowserPlatform](./browsers.browserplatform.md)
-* [BrowserTag](./browsers.browsertag.md)
-* [BrowserFetcher](./browsers.browserfetcher.md)
-* [CanDownloadOptions](./browsers.candownloadoptions.md)
-* [DownloadOptions](./browsers.downloadoptions.md)
-* [InstalledBrowser](./browsers.installedbrowser.md)
-* [UninstallOptions](./browsers.uninstalloptions.md)
-* [cacheDir()](./browsers.cachedir.md)
-* [canDownload()](./browsers.candownload.md)
-* [download()](./browsers.download.md)
-* [getInstalledBrowsers()](./browsers.getinstalledbrowsers.md)
-* [resolveBuildId()](./browsers.resolvebuildid.md)
-* [uninstall()](./browsers.uninstall.md)
+---
+*Documentación mantenida para la arquitectura de automatización de IA-Didactica-Core.*
