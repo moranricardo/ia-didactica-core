@@ -9,26 +9,29 @@ export class AgenteRedactor {
   async redactarYGuardar(tema, contenido, rutaRelativa) {
     try {
       console.log(`[AgenteRedactor] 📝 Escribiendo buffer local en: ${rutaRelativa}`);
-      
+
       const rutaAbsoluta = path.resolve(process.cwd(), rutaRelativa);
       await fs.mkdir(path.dirname(rutaAbsoluta), { recursive: true });
       await fs.writeFile(rutaAbsoluta, contenido, 'utf-8');
 
-      console.log(`[AgenteRedactor] ☁️ Ejecutando push automático a GitHub...`);
-      
-      // Auto-commit y push a la rama principal
-      await execAsync(`git add "${rutaRelativa}"`);
-      await execAsync(`git commit -m "docs(lecciones): generacion automatica de '${tema}' [ia-auto]"`);
+      console.log(`[AgenteRedactor] ☁️ Sincronizando lección con GitHub...`);
+
+      const rutaLimpia = rutaRelativa.replace(/"/g, '\\"');
+      const mensajeCommit = `docs(lecciones): generación automática de '${tema}' [ia-auto]`.replace(/"/g, '\\"');
+
+      await execAsync(`git add "${rutaLimpia}"`);
+      await execAsync(`git commit -m "${mensajeCommit}"`);
+      await execAsync(`git pull --rebase origin main`);
       await execAsync(`git push origin main`);
 
-      console.log(`[AgenteRedactor] ✅ Lección consolidada en la nube de forma segura.`);
+      console.log(`[AgenteRedactor] ✅ Lección consolidada y subida con éxito.`);
       return true;
     } catch (error) {
       if (error.stdout?.includes("nothing to commit") || error.stderr?.includes("nothing to commit")) {
-         console.log(`[AgenteRedactor] ⚠️ El archivo ya estaba sincronizado o sin cambios.`);
+         console.log(`[AgenteRedactor] ⚠️ El archivo ya estaba actualizado sin cambios pendientes.`);
          return true;
       }
-      console.error(`[AgenteRedactor] ❌ Error en sincronización con GitHub:`, error.message);
+      console.error(`[AgenteRedactor] ❌ Error durante la sincronización Git:`, error.message);
       return false;
     }
   }
