@@ -57,9 +57,11 @@ jobs:
 
           TEMA_INPUT="${INPUT_TEMA:-Arquitectura de Microservicios}"
           SLUG=$(echo "$TEMA_INPUT" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9]/-/g; s/--*/-/g; s/^-//; s/-$//')
-          ARCHIVO="lecciones/${SLUG}.md"
+          
+          # Coincidencia con prefijo para soportar timestamps generados por Node.js
+          ARCHIVO=$(ls -t lecciones/${SLUG}*.md 2>/dev/null | head -n 1 || true)
 
-          if [ ! -f "$ARCHIVO" ]; then
+          if [ -z "$ARCHIVO" ] || [ ! -f "$ARCHIVO" ]; then
             ARCHIVO=$(ls -t lecciones/*.md 2>/dev/null | head -n 1 || true)
           fi
 
