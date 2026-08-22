@@ -74,10 +74,20 @@ jobs:
           mkdir -p .github
           echo "* @moranricardo @$BOT_ID" > .github/CODEOWNERS
 
-          echo -e "\n---\n## 🛡️ Sello de Propiedad Intelectual\n**Propietario:** $PROPIETARIO\n**Bot Custodio:** @$BOT_ID\n**Huella:** \`$HUELLA\`\n**Fecha:** $FECHA_ISO\n**Run URL:** $RUN_URL" >> "$ARCHIVO"
+          cat << SELLO >> "$ARCHIVO"
+
+---
+## 🛡️ Sello de Propiedad Intelectual
+**Propietario:** $PROPIETARIO
+**Bot Custodio:** @$BOT_ID
+**Huella:** \`$HUELLA\`
+**Fecha:** $FECHA_ISO
+**Run URL:** $RUN_URL
+SELLO
 
           git add "$ARCHIVO" .github/CODEOWNERS
           if git diff --staged --quiet; then
+            echo "Sin cambios para confirmar."
             exit 0
           fi
 
