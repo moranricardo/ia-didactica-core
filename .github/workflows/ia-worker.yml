@@ -38,12 +38,14 @@ jobs:
       - name: Ejecutar motor de lección
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-          TEMA: ${{ inputs.tema || 'Arquitectura de Microservicios' }}
-        run: node src/core/orquestador.js "$TEMA"
+          INPUT_TEMA: ${{ github.event.inputs.tema }}
+        run: |
+          TEMA="${INPUT_TEMA:-Arquitectura de Microservicios}"
+          node src/core/orquestador.js "$TEMA"
 
       - name: Sello de Propiedad y Blindaje de Autoría
         env:
-          TEMA_INPUT: ${{ inputs.tema || 'Arquitectura de Microservicios' }}
+          INPUT_TEMA: ${{ github.event.inputs.tema }}
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: |
           set -e
@@ -53,7 +55,8 @@ jobs:
           export EMAIL="moranricardo@users.noreply.github.com"
           export FECHA_ISO=$(date -u +%Y-%m-%dT%H:%M:%SZ)
 
-          SLUG=$(echo "${TEMA_INPUT:-general}" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9]/-/g; s/--*/-/g; s/^-//; s/-$//')
+          TEMA_INPUT="${INPUT_TEMA:-Arquitectura de Microservicios}"
+          SLUG=$(echo "$TEMA_INPUT" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9]/-/g; s/--*/-/g; s/^-//; s/-$//')
           ARCHIVO="lecciones/${SLUG}.md"
 
           if [ ! -f "$ARCHIVO" ]; then
