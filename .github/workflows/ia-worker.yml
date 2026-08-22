@@ -35,22 +35,17 @@ jobs:
       - name: Crear directorio de lecciones
         run: mkdir -p lecciones
 
-      - name: Determinar tema
-        id: set-tema
-        run: |
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ -n "${{ github.event.inputs.tema }}" ]; then
-            echo "TEMA_FINAL=${{ github.event.inputs.tema }}" >> $GITHUB_ENV
-          else
-            echo "TEMA_FINAL=Arquitectura de Microservicios" >> $GITHUB_ENV
-          fi
-
       - name: Ejecutar motor de lección
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-        run: node src/core/orquestador.js "$TEMA_FINAL"
+          TEMA_VAL: ${{ inputs.tema }}
+        run: |
+          TEMA="${TEMA_VAL:-Arquitectura de Microservicios}"
+          node src/core/orquestador.js "$TEMA"
 
       - name: Sello de Propiedad y Blindaje de Autoría
         env:
+          TEMA_VAL: ${{ inputs.tema }}
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: |
           set -e
@@ -60,7 +55,7 @@ jobs:
           export EMAIL="moranricardo@users.noreply.github.com"
           export FECHA_ISO=$(date -u +%Y-%m-%dT%H:%M:%SZ)
 
-          TEMA_INPUT="$TEMA_FINAL"
+          TEMA_INPUT="${TEMA_VAL:-Arquitectura de Microservicios}"
           SLUG=$(echo "$TEMA_INPUT" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9]/-/g; s/--*/-/g; s/^-//; s/-$//')
           ARCHIVO="lecciones/${SLUG}.md"
 
