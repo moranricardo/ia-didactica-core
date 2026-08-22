@@ -9,7 +9,7 @@ export class GeminiClient {
 
     this.keys = keysConfig.split(",").map(k => k.trim()).filter(k => k.length > 10);
     this.currentKeyIndex = 0;
-    this.modeloUsado = "gemini-3.5-flash";
+    this.modeloUsado = process.env.GEMINI_MODEL || "gemini-2.5-flash";
   }
 
   _getKey() {
@@ -20,7 +20,7 @@ export class GeminiClient {
   _rotateKey() {
     if (this.keys.length <= 1) return false;
     this.currentKeyIndex = (this.currentKeyIndex + 1) % this.keys.length;
-    console.warn(`🔄 [GeminiClient] Rotando automáticamente a la API Key #${this.currentKeyIndex + 1}`);
+    console.warn(`🔄 [GeminiClient] Rotando a la API Key #${this.currentKeyIndex + 1}`);
     return true;
   }
 
@@ -30,12 +30,12 @@ export class GeminiClient {
 
   async generarTexto(prompt) {
     if (this.keys.length === 0) {
-      console.warn("⚠️ [GeminiClient] No hay claves configuradas. Usando MOCK.");
+      console.warn("⚠️ [GeminiClient] Sin claves API configuradas. Ejecutando respuesta MOCK.");
       return this._generarMock(prompt);
     }
 
     let intentos = 0;
-    const maxIntentosTotal = this.keys.length * 2; // Dos vueltas completas a las llaves si es necesario
+    const maxIntentosTotal = this.keys.length * 2;
 
     while (intentos < maxIntentosTotal) {
       const apiKey = this._getKey();
@@ -51,15 +51,14 @@ export class GeminiClient {
         });
 
         if (!response.ok) {
-          const err = await response.json();
+          const err = await response.json().catch(() => ({}));
           const errorMessage = err.error?.message || response.statusText;
 
           if (errorMessage.includes("quota") || errorMessage.includes("Quota exceeded") || response.status === 429) {
-            console.warn(`⚠️ [GeminiClient] Cuota excedida en llave actual. Rotando...`);
+            console.warn(`⚠️ [GeminiClient] Cuota agotada en la clave actual. Rotando...`);
             intentos++;
             this._rotateKey();
-            // Pequeña pausa de cortesía antes de reintentar con la siguiente llave
-            await this._esperar(2000);
+            await this._esperar(1500);
             continue;
           }
           throw new Error(errorMessage);
@@ -68,7 +67,7 @@ export class GeminiClient {
         const data = await response.json();
         const texto = data.candidates?.[0]?.content?.parts?.[0]?.text || "";
 
-        if (!texto) throw new Error("Respuesta nula del modelo");
+        if (!texto) throw new Error("Respuesta vacía por parte de la API de Gemini.");
 
         return {
           texto,
@@ -79,21 +78,21 @@ export class GeminiClient {
       } catch (error) {
         intentos++;
         if (intentos >= maxIntentosTotal) {
-          console.error("🔴 [GeminiClient] Error crítico en la petición:", error.message);
+          console.error("🔴 [GeminiClient] Límite de intentos agotado:", error.message);
           break;
         }
         this._rotateKey();
-        await this._esperar(3000);
+        await this._esperar(2000);
       }
     }
 
-    console.warn("⚠️ [GeminiClient] Límite superado en todas las claves. Usando MOCK de respaldo.");
+    console.warn("⚠️ [GeminiClient] Fallo en todas las claves. Activando MOCK de respaldo.");
     return this._generarMock(prompt);
   }
 
   _generarMock(prompt) {
     return {
-      texto: "# Lección Técnica Generada (Modo Resiliente)\n\nContenido generado localmente debido a límites de cuota en las claves activas.\n\n### Tema Tratado\n" + prompt.substring(0, 100) + "...",
+      texto: "# Lección Técnica Generada (Modo Resiliente)\n\nContenido generado de respaldo por límite de cuota o ausencia de llaves API.\n\n### Prompt Procesado\n" + prompt.substring(0, 100) + "...",
       modeloUsado: "gemini-mock-fallback",
       tokensAprox: 45
     };
