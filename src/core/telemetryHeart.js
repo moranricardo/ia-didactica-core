@@ -13,15 +13,21 @@ export class TelemetryHeart {
 
   async read() {
     if (!this.octokit) return { agents: {}, lastPulse: null };
-    const { data } = await this.octokit.repos.getContent({
-      owner: this.owner,
-      repo: this.repo,
-      path: this.path,
-      headers: { 'If-None-Match': '' } // Forzar omisión de caché
-    });
-    this.lastSha = data.sha;
-    this.cache = JSON.parse(Buffer.from(data.content, 'base64').toString());
-    return this.cache;
+    try {
+      const { data } = await this.octokit.repos.getContent({
+        owner: this.owner,
+        repo: this.repo,
+        path: this.path,
+        headers: { 'If-None-Match': '' }
+      });
+      this.lastSha = data.sha;
+      const contenido = Buffer.from(data.content, 'base64').toString('utf-8');
+      this.cache = JSON.parse(contenido);
+      return this.cache;
+    } catch (error) {
+      console.warn("⚠️ [TelemetryHeart] No se pudo leer el SSoT remoto, inicializando estado vacío.");
+      return { agents: {}, lastPulse: null };
+    }
   }
 
   async pulse(agent, status, metrics = {}, retries = 3) {
@@ -29,7 +35,7 @@ export class TelemetryHeart {
       return this.mockPulse(agent, status, metrics);
     }
     try {
-      const state = await this.read().catch(() => ({ agents: {}, lastPulse: null }));
+      const state = await this.read();
       state.agents[agent] = {
         status,
         lastPulse: new Date().toISOString(),
@@ -37,7 +43,7 @@ export class TelemetryHeart {
       };
       state.lastPulse = new Date().toISOString();
 
-      if (Object.keys(state.agents).length > 50) throw new Error("State overflow");
+      if (Object.keys(state.agents).length > 50) throw new Error("Exceso de agentes registrados en estado.");
 
       await this.octokit.repos.createOrUpdateFileContents({
         owner: this.owner,
@@ -47,16 +53,15 @@ export class TelemetryHeart {
         content: Buffer.from(JSON.stringify(state, null, 2)).toString('base64'),
         sha: this.lastSha
       });
-      console.log(`💓 [TelemetryHeart] Pulso en GitHub: ${agent} (${status})`);
+      console.log(`💓 [TelemetryHeart] Pulso registrado: ${agent} (${status})`);
       return state;
     } catch (error) {
-      // 🛡️ Mecanismo de auto-sanación para colisiones de GitHub
       if (error.status === 409 && retries > 0) {
-        console.log(`⚠️ [TelemetryHeart] Colisión en GitHub (SHA stale). Reintentando en 1s...`);
+        console.log(`⚠️ [TelemetryHeart] Colisión SHA en GitHub. Reintentando (${retries})...`);
         await new Promise(r => setTimeout(r, 1000));
         return this.pulse(agent, status, metrics, retries - 1);
       }
-      console.error(`🔴 [TelemetryHeart] Error: ${error.message}`);
+      console.error(`🔴 [TelemetryHeart] Error en pulso: ${error.message}`);
       throw error;
     }
   }
