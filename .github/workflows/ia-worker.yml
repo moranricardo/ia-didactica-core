@@ -43,17 +43,17 @@ jobs:
           TEMA="${INPUT_TEMA:-Arquitectura de Microservicios}"
           node src/core/orquestador.js "$TEMA"
 
-      - name: Sello de Propiedad y Blindaje de Autoria
+      - name: Sello de Propiedad y Blindaje
         env:
           INPUT_TEMA: ${{ github.event.inputs.tema }}
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: |
           set -e
-          export PROPIETARIO="Ricardo Moran"
-          export BOT_ID="ricardomoranbot"
-          export HUELLA="chrome-mobile-es-419"
-          export EMAIL="moranricardo@users.noreply.github.com"
-          export FECHA_ISO=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+          PROPIETARIO="Ricardo Moran"
+          BOT_ID="ricardomoranbot"
+          HUELLA="chrome-mobile-es-419"
+          EMAIL="moranricardo@users.noreply.github.com"
+          FECHA_ISO=$(date -u +%Y-%m-%dT%H:%M:%SZ)
 
           TEMA_INPUT="${INPUT_TEMA:-Arquitectura de Microservicios}"
           SLUG=$(echo "$TEMA_INPUT" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9]/-/g; s/--*/-/g; s/^-//; s/-$//')
@@ -64,58 +64,29 @@ jobs:
           fi
 
           if [ -z "$ARCHIVO" ] || [ ! -f "$ARCHIVO" ]; then
-            echo "ℹ️ No hay archivos Markdown para sellar."
+            echo "No hay archivos Markdown para sellar."
             exit 0
           fi
 
-          git config --global user.name "$PROPIETARIO (Bot Propietario)"
+          git config --global user.name "$PROPIETARIO"
           git config --global user.email "$EMAIL"
 
           mkdir -p .github
-          cat << CODE > .github/CODEOWNERS
-# Sello de Propiedad Intelectual - $HUELLA
-# Propietario: $PROPIETARIO
-
-* @moranricardo @$BOT_ID
-lecciones/* @moranricardo @$BOT_ID
-.github/* @moranricardo @$BOT_ID
-src/* @moranricardo @$BOT_ID
-CODE
-
-          SAFE_RUN_URL=$(echo "$RUN_URL" | sed 's/"/\\"/g')
-          SAFE_ARCHIVO=$(echo "$ARCHIVO" | sed 's/"/\\"/g')
+          echo "* @moranricardo @$BOT_ID" > .github/CODEOWNERS
 
           cat << SELLO >> "$ARCHIVO"
 
 ---
 ## 🛡️ Sello de Propiedad Intelectual
-
 **Propietario:** $PROPIETARIO
 **Bot Custodio:** @$BOT_ID
-**Huella de Dispositivo:** \`$HUELLA\`
-**Origen:** IA-Didactica-Core Cloud Pipeline
-**Generado:** $FECHA_ISO
-**Workflow URL:** $RUN_URL
-**Licencia:** MIT + Atribucion Obligatoria a $PROPIETARIO
-
-> Este documento esta firmado digitalmente en la nube. Cualquier clon o uso sin esta huella es una copia no autorizada.
-
-\`\`\`json
-{
-  "owner": "$PROPIETARIO",
-  "bot": "$BOT_ID",
-  "huella": "$HUELLA",
-  "archivo": "$SAFE_ARCHIVO",
-  "timestamp": "$FECHA_ISO",
-  "runUrl": "$SAFE_RUN_URL"
-}
-\`\`\`
+**Huella:** \`$HUELLA\`
+**Fecha:** $FECHA_ISO
+**Run URL:** $RUN_URL
 SELLO
 
           git add "$ARCHIVO" .github/CODEOWNERS
-
           if git diff --staged --quiet; then
-            echo "Sin cambios pendientes de commit."
             exit 0
           fi
 
