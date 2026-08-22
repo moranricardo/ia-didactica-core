@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
     inputs:
       tema:
-        description: 'Tema de la lección'
+        description: 'Tema de la leccion'
         required: false
         default: 'Arquitectura de Microservicios'
 
@@ -35,17 +35,17 @@ jobs:
       - name: Crear directorio de lecciones
         run: mkdir -p lecciones
 
-      - name: Ejecutar motor de lección
+      - name: Ejecutar motor de leccion
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-          TEMA_VAL: ${{ inputs.tema }}
+          INPUT_TEMA: ${{ github.event.inputs.tema }}
         run: |
-          TEMA="${TEMA_VAL:-Arquitectura de Microservicios}"
+          TEMA="${INPUT_TEMA:-Arquitectura de Microservicios}"
           node src/core/orquestador.js "$TEMA"
 
-      - name: Sello de Propiedad y Blindaje de Autoría
+      - name: Sello de Propiedad y Blindaje de Autoria
         env:
-          TEMA_VAL: ${{ inputs.tema }}
+          INPUT_TEMA: ${{ github.event.inputs.tema }}
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: |
           set -e
@@ -55,7 +55,7 @@ jobs:
           export EMAIL="moranricardo@users.noreply.github.com"
           export FECHA_ISO=$(date -u +%Y-%m-%dT%H:%M:%SZ)
 
-          TEMA_INPUT="${TEMA_VAL:-Arquitectura de Microservicios}"
+          TEMA_INPUT="${INPUT_TEMA:-Arquitectura de Microservicios}"
           SLUG=$(echo "$TEMA_INPUT" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9]/-/g; s/--*/-/g; s/^-//; s/-$//')
           ARCHIVO="lecciones/${SLUG}.md"
 
@@ -96,9 +96,9 @@ CODE
 **Origen:** IA-Didactica-Core Cloud Pipeline
 **Generado:** $FECHA_ISO
 **Workflow URL:** $RUN_URL
-**Licencia:** MIT + Atribución Obligatoria a $PROPIETARIO
+**Licencia:** MIT + Atribucion Obligatoria a $PROPIETARIO
 
-> Este documento está firmado digitalmente en la nube. Cualquier clon o uso sin esta huella es una copia no autorizada.
+> Este documento esta firmado digitalmente en la nube. Cualquier clon o uso sin esta huella es una copia no autorizada.
 
 \`\`\`json
 {
