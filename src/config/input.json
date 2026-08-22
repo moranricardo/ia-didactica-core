@@ -1,1 +1,10 @@
-{"seleccion": "cuéntame un chiste sobre el clima", "accion": "ejecutar"}
+{
+  "usuario": "ricardo",
+  "modo": "didactico",
+  "accion": "ejecutar",
+  "seleccion": "cuéntame un chiste sobre el clima",
+  "parametros": {
+    "temperatura": 0.7,
+    "max_tokens": 150
+  }
+}
