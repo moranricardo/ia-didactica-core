@@ -16,19 +16,22 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout del repositorio
-        uses: actions/checkout@v7
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Configurar Node.js
-        uses: actions/setup-node@v7
+        uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'npm'
 
       - name: Instalar dependencias
         run: npm ci || npm install
+
+      - name: Crear directorio de lecciones
+        run: mkdir -p lecciones
 
       - name: Ejecutar motor de lección
         env:
@@ -58,52 +61,61 @@ jobs:
           
           if [ ! -f "$ARCHIVO" ]; then
             echo "⚠️ Archivo no encontrado en la ruta esperada, buscando último archivo generado..."
-            ARCHIVO=$(ls -t lecciones/*.md | head -n 1)
+            ARCHIVO=$(ls -t lecciones/*.md 2>/dev/null | head -n 1 || true)
             echo "📄 Usando archivo alternativo: $ARCHIVO"
+          fi
+
+          if [ -z "$ARCHIVO" ] || [ ! -f "$ARCHIVO" ]; then
+            echo "❌ No se encontró ningún archivo generado en lecciones/"
+            exit 1
           fi
 
           git config --global user.name "$PROPIETARIO (Bot Propietario)"
           git config --global user.email "$EMAIL"
-          git pull --rebase origin main || true
 
           # Creación de CODEOWNERS para proteger la propiedad intelectual
           mkdir -p .github
-          cat > .github/CODEOWNERS << CODE
-          # Sello de Propiedad Intelectual - $HUELLA
-          # Propietario: $PROPIETARIO
-          * @$BOT_ID
-          lecciones/* @$BOT_ID
-          .github/* @$BOT_ID
-          src/* @$BOT_ID
-          CODE
+          cat << CODE > .github/CODEOWNERS
+# Sello de Propiedad Intelectual - $HUELLA
+# Propietario: $PROPIETARIO
+
+* @moranricardo @$BOT_ID
+lecciones/* @moranricardo @$BOT_ID
+.github/* @moranricardo @$BOT_ID
+src/* @moranricardo @$BOT_ID
+CODE
+
+          # Sanitización de rutas y variables para el JSON
+          SAFE_RUN_URL=$(echo "$RUN_URL" | sed 's/"/\\"/g')
+          SAFE_ARCHIVO=$(echo "$ARCHIVO" | sed 's/"/\\"/g')
 
           # Inyección de sello de propiedad dentro de la lección generada
-          cat >> "$ARCHIVO" << SELLO
+          cat << SELLO >> "$ARCHIVO"
 
-          ---
-          ## 🛡️ Sello de Propiedad Intelectual
+---
+## 🛡️ Sello de Propiedad Intelectual
 
-          **Propietario:** $PROPIETARIO
-          **Bot Custodio:** @$BOT_ID
-          **Huella de Dispositivo:** \`$HUELLA\`
-          **Origen:** IA-Didactica-Core Cloud Pipeline
-          **Generado:** $FECHA_ISO
-          **Workflow URL:** $RUN_URL
-          **Licencia:** MIT + Atribución Obligatoria a $PROPIETARIO
+**Propietario:** $PROPIETARIO
+**Bot Custodio:** @$BOT_ID
+**Huella de Dispositivo:** \`$HUELLA\`
+**Origen:** IA-Didactica-Core Cloud Pipeline
+**Generado:** $FECHA_ISO
+**Workflow URL:** $RUN_URL
+**Licencia:** MIT + Atribución Obligatoria a $PROPIETARIO
 
-          > Este documento está firmado digitalmente en la nube. Cualquier clon o uso sin esta huella es una copia no autorizada.
+> Este documento está firmado digitalmente en la nube. Cualquier clon o uso sin esta huella es una copia no autorizada.
 
-          \`\`\`json
-          {
-            "owner": "$PROPIETARIO",
-            "bot": "$BOT_ID",
-            "huella": "$HUELLA",
-            "archivo": "$ARCHIVO",
-            "timestamp": "$FECHA_ISO",
-            "runUrl": "$RUN_URL"
-          }
-          \`\`\`
-          SELLO
+\`\`\`json
+{
+  "owner": "$PROPIETARIO",
+  "bot": "$BOT_ID",
+  "huella": "$HUELLA",
+  "archivo": "$SAFE_ARCHIVO",
+  "timestamp": "$FECHA_ISO",
+  "runUrl": "$SAFE_RUN_URL"
+}
+\`\`\`
+SELLO
 
           git add "$ARCHIVO" .github/CODEOWNERS
 
@@ -112,12 +124,13 @@ jobs:
             exit 0
           fi
 
+          git pull --rebase origin main || true
           git commit -m "feat(leccion): blindaje y propiedad para $TEMA_INPUT [$SLUG]
 
-          Propiedad Intelectual: $PROPIETARIO
-          Huella de Dispositivo: $HUELLA
-          Bot Custodio: @$BOT_ID
-          Origen CI: $RUN_URL
-          Fecha: $FECHA_ISO"
+Propiedad Intelectual: $PROPIETARIO
+Huella de Dispositivo: $HUELLA
+Bot Custodio: @$BOT_ID
+Origen CI: $RUN_URL
+Fecha: $FECHA_ISO"
 
           git push origin main
