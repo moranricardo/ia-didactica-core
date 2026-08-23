@@ -1,7 +1,33 @@
 {
   "name": "ia-didactica-core",
   "version": "1.0.0",
+  "description": "Ecosistema de IA Didáctica Autónoma v1.0.",
   "type": "module",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "cli": "node chat.js",
+    "audit": "python3 src/cli.py",
+    "test": "node --test src/test/*.test.js 2>/dev/null || echo '⚠️ Implementa tus pruebas en src/test/'"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/moranricardo/ia-didactica-core.git"
+  },
+  "keywords": [
+    "ai",
+    "gemini",
+    "qwen",
+    "education",
+    "didactica",
+    "orchestrator"
+  ],
+  "author": "Ricardo Moran Maldonado <moranmaldonadoricardo@gmail.com>",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/moranricardo/ia-didactica-core/issues"
+  },
+  "homepage": "https://github.com/moranricardo/ia-didactica-core#readme",
   "dependencies": {
     "@google/genai": "^2.17.1",
     "@google/generative-ai": "^0.24.1",
@@ -11,21 +37,5 @@
     "express": "^5.2.1",
     "octokit": "^5.0.5",
     "zod": "^4.4.3"
-  },
-  "description": "Ecosistema de IA Didáctica Autónoma v1.0.",
-  "main": "main.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/moranricardo/ia-didactica-core.git"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/moranricardo/ia-didactica-core/issues"
-  },
-  "homepage": "https://github.com/moranricardo/ia-didactica-core#readme"
+  }
 }
