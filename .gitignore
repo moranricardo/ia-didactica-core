@@ -1,8 +1,31 @@
+# Dependencias
 node_modules/
+
+# Entorno y Secretos
 .env
+.env.local
+.env.*.local
+
+# Python y Cache
 __pycache__/
+*.pyc
+*.pyo
+*.pyd
+.cache/
+
+# Archivos Temporales y Logs
+logs/
+*.log
 dump/
 *.tar.gz
-state.json
-logs/
-.env
+*.tmp
+
+# Cobertura y Telemetría Temporal
+coverage/
+.nyc_output/
+
+# Archivos de Sistema Operativo y Editores
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
