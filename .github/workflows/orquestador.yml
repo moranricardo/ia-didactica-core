@@ -1,0 +1,39 @@
+name: Orquestador IA Automático
+
+on:
+  workflow_dispatch:
+    inputs:
+      tema:
+        description: 'Tema a generar'
+        required: true
+        default: 'Arquitectura de Microservicios'
+  schedule:
+    - cron: '0 */6 * * *' # Se ejecuta automáticamente cada 6 horas
+
+jobs:
+  run-orchestrator:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout del código
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Ejecutar Orquestador
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: node src/core/orquestador.js "${{ github.event.inputs.tema || 'Arquitectura Autónoma' }}"
+
+      - name: Guardar Cambios Generados
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add lecciones/
+          git commit -m "chore(ia): lección generada automáticamente por GitHub Actions" || exit 0
+          git push
