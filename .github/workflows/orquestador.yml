@@ -14,9 +14,9 @@ jobs:
   run-orchestrator:
     runs-on: ubuntu-latest
     permissions:
-      contents: write # Concede permisos explícitos de escritura para git push
+      contents: write
     steps:
-      - name: Checkout del código
+      - name: Checkout del codigo
         uses: actions/checkout@v4
 
       - name: Configurar Node.js
@@ -30,12 +30,12 @@ jobs:
       - name: Ejecutar Orquestador en la Nube
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-        run: node src/core/orquestador.js "${{ github.event.inputs.tema || 'Arquitectura Autónoma' }}"
+        run: node src/core/orquestador.js "${{ github.event.inputs.tema || 'Arquitectura Autonoma' }}"
 
       - name: Guardar Lecciones Generadas
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git add lecciones/
-          git commit -m "chore(ia): lección generada automáticamente por la nube" || exit 0
+          git commit -m "chore(ia): leccion generada automaticamente por la nube" || exit 0
           git push
