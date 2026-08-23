@@ -1,27 +1,37 @@
-import { consultarIALocal } from './consultarLocal.js';
+import { consultarLocal } from './consultarLocal.js';
 
 export async function obtenerRespuestaResiliente(prompt, llamarGeminiAPI, cache) {
-  // 1. Verificar en Caché Local
-  if (cache && cache.buscar) {
-    const cached = cache.buscar(prompt);
-    if (cached) return cached;
+  if (cache) {
+    try {
+      const fnBuscar = cache.consultarCache || cache.buscar || cache.obtener;
+      if (typeof fnBuscar === 'function') {
+        const cached = await fnBuscar.call(cache, prompt);
+        if (cached) return cached;
+      }
+    } catch (e) {
+      // Continuar si falla la caché
+    }
   }
 
-  // 2. Intentar API en la nube
   try {
     const respuesta = await llamarGeminiAPI(prompt);
     if (respuesta) return respuesta;
+    console.log("\n🔴 [Red/Cuota] La API en la nube no devolvió respuesta. Evaluando servidor local...");
   } catch (err) {
     console.log("\n🔴 [Red/Cuota] Petición a la nube fallida. Evaluando servidor local...");
   }
 
-  // 3. Intentar Servidor Local (Ollama / Local)
-  const respLocal = await consultarIALocal(prompt);
-  if (respLocal) {
-    console.log("\n🟢 [IA Local] Respuesta generada mediante servidor local.");
-    return respLocal;
+  try {
+    const respLocal = await consultarLocal(prompt);
+    if (respLocal) {
+      console.log("\n🟢 [IA Local] Respuesta generada mediante servidor local.");
+      return respLocal;
+    }
+  } catch (e) {
+    // Continuar a contingencia
   }
 
-  // 4. Contingencia si no hay servidor local corriendo
   return "⚠️ [Modo Offline] Sin conexión a internet y el servidor local no está activo. Revisa tu red o inicia tu modelo local.";
 }
+
+export default obtenerRespuestaResiliente;
