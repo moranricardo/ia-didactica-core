@@ -1,23 +1,38 @@
 {
-  "lastPulse": "2026-07-27T02:27:57.403Z",
+  "lastPulse": "2026-08-22T23:00:00.000Z",
+  "globalStats": {
+    "totalExecutions": 42,
+    "totalTokensUsed": 15400,
+    "activeAgents": 0,
+    "systemStatus": "healthy"
+  },
   "agents": {
     "AgenteCritico": {
       "status": "idle",
-      "lastPulse": "2026-07-26T21:46:25.495Z",
+      "lastPulse": "2026-08-22T23:00:00.000Z",
       "aprobado": true,
-      "ultimaAccion": "Lección generada",
-      "tokensUsados": 0,
-      "tiempoMs": 803
+      "ultimaAccion": "Validación constitucional de herramienta",
+      "tokensUsados": 350,
+      "tiempoMs": 803,
+      "lastError": null
     },
     "AgenteInvestigador": {
       "status": "idle",
-      "lastPulse": "2026-07-27T02:27:54.993Z",
-      "tokensUsados": 0
+      "lastPulse": "2026-08-22T23:00:00.000Z",
+      "aprobado": true,
+      "ultimaAccion": "Búsqueda de contexto pedagógico",
+      "tokensUsados": 1200,
+      "tiempoMs": 1450,
+      "lastError": null
     },
     "AgenteRedactor": {
       "status": "idle",
-      "lastPulse": "2026-07-27T02:27:57.403Z",
-      "ultimaAccion": "lecciones/docker-vs-podman.md"
+      "lastPulse": "2026-08-22T23:00:00.000Z",
+      "aprobado": true,
+      "ultimaAccion": "lecciones/docker-vs-podman.md",
+      "tokensUsados": 2100,
+      "tiempoMs": 2300,
+      "lastError": null
     }
   }
 }
