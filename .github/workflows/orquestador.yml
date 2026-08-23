@@ -18,6 +18,8 @@ jobs:
     steps:
       - name: Checkout del codigo
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Configurar Node.js
         uses: actions/setup-node@v4
@@ -36,6 +38,8 @@ jobs:
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          mkdir -p lecciones
           git add lecciones/
-          git commit -m "chore(ia): leccion generada automaticamente por la nube" || exit 0
+          git commit -m "chore(ia): leccion generada automaticamente por la nube" || echo "Sin cambios para hacer commit"
+          git pull --rebase origin main
           git push

@@ -1,0 +1,6 @@
+{
+    "archivos": [
+        "src/server.js",
+        "src/cli.py"
+    ]
+}

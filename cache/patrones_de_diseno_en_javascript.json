@@ -1,0 +1,8 @@
+{
+  "timestamp": 1787469781771,
+  "data": {
+    "texto": "# Lección Técnica Generada (Modo Resiliente)\n\nContenido generado de respaldo por límite de cuota o ausencia de llaves API.\n\n### Prompt Procesado\nExplica de forma detallada, clara y estructurada el siguiente tema técnico: Patrones de Diseno en Ja...",
+    "modeloUsado": "gemini-mock-fallback",
+    "tokensAprox": 45
+  }
+}
