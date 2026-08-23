@@ -1,45 +1,70 @@
 // src/services/api.js
-// Reemplaza 'localhost' por la IP de tu red local (ej. 192.168.1.XX) si tu app en Expo corre en otro dispositivo.
-const API_URL = 'http://localhost:3000/api';
 
-export const consultarChat = async (prompt) => {
+const BASE_URL = process.env.API_URL || 'http://127.0.0.1:3000/api';
+const DEFAULT_TIMEOUT_MS = 15000;
+
+const fetchConTimeout = async (endpoint, options = {}, timeoutMs = DEFAULT_TIMEOUT_MS) => {
+  const controller = new AbortController();
+  const id = setTimeout(() => controller.abort(), timeoutMs);
+
   try {
-    const response = await fetch(`${API_URL}/chat`, {
-      method: 'POST',
+    const response = await fetch(`${BASE_URL}${endpoint}`, {
+      ...options,
+      signal: controller.signal,
       headers: {
         'Content-Type': 'application/json',
+        ...options.headers,
       },
-      body: JSON.stringify({ prompt }),
     });
 
+    clearTimeout(id);
+
     if (!response.ok) {
-      throw new Error(`Error HTTP: ${response.status}`);
+      let mensajeError = `Error HTTP: ${response.status}`;
+      try {
+        const errorJson = await response.json();
+        if (errorJson.error || errorJson.message) {
+          mensajeError = errorJson.error || errorJson.message;
+        }
+      } catch (_) {}
+      throw new Error(mensajeError);
     }
 
     return await response.json();
   } catch (error) {
-    console.error('❌ [API Chat Error]:', error);
+    clearTimeout(id);
+    if (error.name === 'AbortError') {
+      throw new Error('La solicitud excedió el tiempo límite de espera.');
+    }
+    throw error;
+  }
+};
+
+export const consultarChat = async (prompt) => {
+  try {
+    return await fetchConTimeout('/chat', {
+      method: 'POST',
+      body: JSON.stringify({ prompt }),
+    });
+  } catch (error) {
+    console.error('❌ [API Chat Error]:', error.message);
     throw error;
   }
 };
 
 export const solicitarLeccion = async (tema, nivel = 'intermedio') => {
   try {
-    const response = await fetch(`${API_URL}/leccion`, {
+    return await fetchConTimeout('/leccion', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
       body: JSON.stringify({ tema, nivel }),
     });
-
-    if (!response.ok) {
-      throw new Error(`Error HTTP: ${response.status}`);
-    }
-
-    return await response.json();
   } catch (error) {
-    console.error('❌ [API Lección Error]:', error);
+    console.error('❌ [API Lección Error]:', error.message);
     throw error;
   }
+};
+
+export default {
+  consultarChat,
+  solicitarLeccion
 };
