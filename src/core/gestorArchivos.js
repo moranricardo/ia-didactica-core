@@ -3,19 +3,22 @@ import path from 'path';
 
 export class GestorArchivos {
   constructor(directorioBase = './lecciones') {
-    this.directorioBase = directorioBase;
+    this.directorioBase = path.resolve(directorioBase);
   }
 
   async inicializar() {
     try {
       await fs.mkdir(this.directorioBase, { recursive: true });
     } catch (error) {
-      console.error("[GestorArchivos] Error al verificar/crear directorio base:", error.message);
+      console.error("[GestorArchivos] ❌ Error crítico al crear directorio base:", error.message);
+      throw error;
     }
   }
 
   _crearSlug(texto) {
+    if (!texto) return 'leccion-sin-titulo';
     return texto
+      .toString()
       .normalize("NFD")
       .replace(/[\u0300-\u036f]/g, "")
       .toLowerCase()
@@ -29,18 +32,20 @@ export class GestorArchivos {
 
     const nombreSeguro = this._crearSlug(tema);
     const timestamp = Date.now();
-    const extension = formato === 'md' ? 'md' : 'json';
+    const esMarkdown = formato.toLowerCase() === 'md';
+    const extension = esMarkdown ? 'md' : 'json';
     const nombreArchivo = `${nombreSeguro}-${timestamp}.${extension}`;
     const rutaAbsoluta = path.join(this.directorioBase, nombreArchivo);
 
     try {
-      if (formato === 'md') {
-        await fs.writeFile(rutaAbsoluta, contenido, 'utf-8');
+      if (esMarkdown) {
+        const textoMD = typeof contenido === 'string' ? contenido : JSON.stringify(contenido, null, 2);
+        await fs.writeFile(rutaAbsoluta, textoMD, 'utf-8');
       } else {
         const datosAGuardar = {
           tema,
           aprobadoEn: new Date().toISOString(),
-          contenidoFinal: contenido
+          contenidoFinal: typeof contenido === 'string' ? contenido : contenido
         };
         await fs.writeFile(rutaAbsoluta, JSON.stringify(datosAGuardar, null, 2), 'utf-8');
       }
@@ -53,3 +58,5 @@ export class GestorArchivos {
     }
   }
 }
+
+export default GestorArchivos;
