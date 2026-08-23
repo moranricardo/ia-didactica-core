@@ -1,10 +1,14 @@
 # Sesión Activa - ia-didactica-core
-- **App:** Termux
-- **Protocolo:** Inyección directa (`~/ia-work` + `inject.sh`)
-- **Estado actual:**
-    - Arquitectura Serverless completada.
-    - `TelemetryHeart.js` y `AgenteAuditor.js` FUNCIONANDO en producción.
-    - `GeminiClient.js` integrado con fallback de seguridad MOCK.
-    - Migración completada: Legacy `auditoria_gerrit.cjs` eliminado de Termux.
-- **Próximo paso:**
-    - Escalar la flota: Añadir nuevos agentes o conectar flujos reales de trabajo.
+- **Entorno:** Termux (Android)
+- **Repositorio:** https://github.com/moranricardo/ia-didactica-core.git
+- **Autor / Mapeo:** Ricardo Moran Maldonado (<moranmaldonadoricardo@gmail.com>)
+- **Estado Actual:**
+  - **Servidor HTTP / REST API (src/server.js):** Implementado con middleware global de errores, saneamiento de payloads y graceful shutdown.
+  - **Telemetría (telemetry/state.json):** Esquema unificado y estandarizado con métricas globales y rastreo por agente.
+  - **CLI Interactivo (chat.js):** Resiliente con manejo de excepciones y captura de señales SIGINT.
+  - **Constitución del Sistema (constitucion.txt):** Directrices pedagógicas, de seguridad y de runtime efímero actualizadas.
+  - **Configuración de Git:** Archivos .gitignore y .mailmap optimizados e integrados en main.
+- **Próximos Pasos:**
+  - Auditar y refactorizar los scripts auxiliares de shell (generar.sh, leer.sh).
+  - Validar la integración de los módulos internos en src/core/ (AgenteCritico.js, GeminiClient.js, etc.).
+  - Ejecutar y expandir la suite de pruebas en src/test/.
