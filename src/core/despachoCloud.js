@@ -9,27 +9,40 @@ export async function despacharAGitHub(path, contenido, mensajeCommit) {
   }
 
   const url = `https://api.github.com/repos/${owner}/${repo}/contents/${path}`;
-  const contentBase64 = Buffer.from(contenido).toString('base64');
+  const headers = {
+    'Authorization': `Bearer ${token}`,
+    'Content-Type': 'application/json',
+    'User-Agent': 'IA-Didactica-Core-Android9',
+    'X-GitHub-Api-Version': '2022-11-28'
+  };
 
   try {
+    let shaActual = null;
+    const checkResponse = await fetch(url, { headers });
+    if (checkResponse.ok) {
+      const checkData = await checkResponse.json();
+      shaActual = checkData.sha;
+    }
+
+    const contentBase64 = Buffer.from(contenido, 'utf-8').toString('base64');
+
+    const bodyPayload = {
+      message: mensajeCommit || `add: lección en ${path}`,
+      content: contentBase64,
+      ...(shaActual && { sha: shaActual })
+    };
+
     const response = await fetch(url, {
       method: 'PUT',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
-        'User-Agent': 'IA-Didactica-Core'
-      },
-      body: JSON.stringify({
-        message: mensajeCommit || `add: lección en ${path}`,
-        content: contentBase64
-      })
+      headers,
+      body: JSON.stringify(bodyPayload)
     });
 
     const data = await response.json();
 
     if (response.ok) {
-      console.log(`🚀 [GitHub Cloud] Archivo subido con éxito a: ${data.content.html_url}`);
-      return { success: true, url: data.content.html_url };
+      console.log(`🚀 [GitHub Cloud] Archivo subido con éxito a: ${data.content?.html_url}`);
+      return { success: true, url: data.content?.html_url };
     } else {
       console.error(`❌ [GitHub Cloud] Error ${response.status}: ${data.message}`);
       return { success: false, reason: data.message };
