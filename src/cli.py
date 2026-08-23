@@ -7,9 +7,8 @@ import argparse
 from datetime import datetime, timezone
 from pathlib import Path
 
-# Carga de la clase correcta MutatorEmulator desde src/core/
 CURRENT_DIR = Path(__file__).resolve().parent
-CORE_DIR = CURRENT_DIR / "core"
+CORE_DIR = CURRENT_DIR.parent / "core" if (CURRENT_DIR.parent / "core").exists() else CURRENT_DIR / "core"
 sys.path.insert(0, str(CORE_DIR))
 
 try:
@@ -29,7 +28,7 @@ SECRET_PATTERNS = [
 ]
 
 def scan_file_for_secrets(filepath):
-    if "cli.py" in filepath or "package-lock.json" in filepath:
+    if any(ignored in filepath for ignored in ["cli.py", "package-lock.json", ".env.example"]):
         return []
     findings = []
     try:
