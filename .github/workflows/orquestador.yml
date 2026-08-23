@@ -1,4 +1,4 @@
-name: Orquestador IA Automático
+name: Orquestador IA Cloud
 
 on:
   workflow_dispatch:
@@ -8,11 +8,13 @@ on:
         required: true
         default: 'Arquitectura de Microservicios'
   schedule:
-    - cron: '0 */6 * * *' # Se ejecuta automáticamente cada 6 horas
+    - cron: '0 */6 * * *'
 
 jobs:
   run-orchestrator:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write # Concede permisos explícitos de escritura para git push
     steps:
       - name: Checkout del código
         uses: actions/checkout@v4
@@ -25,15 +27,15 @@ jobs:
       - name: Instalar dependencias
         run: npm ci
 
-      - name: Ejecutar Orquestador
+      - name: Ejecutar Orquestador en la Nube
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: node src/core/orquestador.js "${{ github.event.inputs.tema || 'Arquitectura Autónoma' }}"
 
-      - name: Guardar Cambios Generados
+      - name: Guardar Lecciones Generadas
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git add lecciones/
-          git commit -m "chore(ia): lección generada automáticamente por GitHub Actions" || exit 0
+          git commit -m "chore(ia): lección generada automáticamente por la nube" || exit 0
           git push
