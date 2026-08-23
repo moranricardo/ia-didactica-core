@@ -1,4 +1,6 @@
 import { Octokit } from "@octokit/rest";
+import fs from 'fs/promises';
+import path from 'path';
 
 export class TelemetryHeart {
   constructor() {
@@ -25,7 +27,12 @@ export class TelemetryHeart {
       this.cache = JSON.parse(contenido);
       return this.cache;
     } catch (error) {
-      console.warn("⚠️ [TelemetryHeart] No se pudo leer el SSoT remoto, inicializando estado vacío.");
+      if (error.status === 404) {
+        console.warn("⚠️ [TelemetryHeart] Archivo de telemetría no encontrado en GitHub. Se creará en el próximo pulso.");
+        this.lastSha = null;
+      } else {
+        console.warn(`⚠️ [TelemetryHeart] No se pudo leer el SSoT remoto (${error.message}). Usando estado base.`);
+      }
       return { agents: {}, lastPulse: null };
     }
   }
@@ -36,6 +43,9 @@ export class TelemetryHeart {
     }
     try {
       const state = await this.read();
+      
+      if (!state.agents) state.agents = {};
+
       state.agents[agent] = {
         status,
         lastPulse: new Date().toISOString(),
@@ -43,16 +53,25 @@ export class TelemetryHeart {
       };
       state.lastPulse = new Date().toISOString();
 
-      if (Object.keys(state.agents).length > 50) throw new Error("Exceso de agentes registrados en estado.");
+      if (Object.keys(state.agents).length > 50) {
+        throw new Error("Exceso de agentes registrados en el estado de telemetría.");
+      }
 
-      await this.octokit.repos.createOrUpdateFileContents({
+      const payload = {
         owner: this.owner,
         repo: this.repo,
         path: this.path,
         message: `pulse: 💓 ${agent} -> ${status}`,
-        content: Buffer.from(JSON.stringify(state, null, 2)).toString('base64'),
-        sha: this.lastSha
-      });
+        content: Buffer.from(JSON.stringify(state, null, 2)).toString('base64')
+      };
+
+      if (this.lastSha) {
+        payload.sha = this.lastSha;
+      }
+
+      const { data } = await this.octokit.repos.createOrUpdateFileContents(payload);
+      this.lastSha = data.content?.sha || null;
+
       console.log(`💓 [TelemetryHeart] Pulso registrado: ${agent} (${status})`);
       return state;
     } catch (error) {
@@ -66,8 +85,28 @@ export class TelemetryHeart {
     }
   }
 
-  mockPulse(agent, status, metrics = {}) {
+  async mockPulse(agent, status, metrics = {}) {
     console.log(`💓 [TelemetryHeart] MOCK LOCAL: ${agent} -> ${status}`);
-    return { mock: true, agent, status, timestamp: new Date().toISOString() };
+    const mockState = {
+      mock: true,
+      agent,
+      status,
+      metrics,
+      timestamp: new Date().toISOString()
+    };
+
+    try {
+      const cacheDir = path.resolve('.cache');
+      await fs.mkdir(cacheDir, { recursive: true });
+      await fs.writeFile(
+        path.join(cacheDir, 'telemetry-mock.json'), 
+        JSON.stringify(mockState, null, 2), 
+        'utf-8'
+      );
+    } catch (_) {}
+
+    return mockState;
   }
 }
+
+export default TelemetryHeart;
