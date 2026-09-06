@@ -9,7 +9,7 @@
     "dev": "node --watch src/server.js",
     "cli": "node chat.js",
     "audit": "python3 src/cli.py",
-    "test": "node --test src/test/**/*.test.js"
+    "test": "node --test src/test/*.js"
   },
   "repository": {
     "type": "git",
