@@ -1,38 +1,14 @@
 {
-  "lastPulse": "2026-08-22T23:00:00.000Z",
+  "lastPulse": "2026-09-06T15:30:00.000Z",
   "globalStats": {
-    "totalExecutions": 42,
+    "totalExecutions": 43,
     "totalTokensUsed": 15400,
     "activeAgents": 0,
     "systemStatus": "healthy"
   },
   "agents": {
-    "AgenteCritico": {
-      "status": "idle",
-      "lastPulse": "2026-08-22T23:00:00.000Z",
-      "aprobado": true,
-      "ultimaAccion": "Validación constitucional de herramienta",
-      "tokensUsados": 350,
-      "tiempoMs": 803,
-      "lastError": null
-    },
-    "AgenteInvestigador": {
-      "status": "idle",
-      "lastPulse": "2026-08-22T23:00:00.000Z",
-      "aprobado": true,
-      "ultimaAccion": "Búsqueda de contexto pedagógico",
-      "tokensUsados": 1200,
-      "tiempoMs": 1450,
-      "lastError": null
-    },
-    "AgenteRedactor": {
-      "status": "idle",
-      "lastPulse": "2026-08-22T23:00:00.000Z",
-      "aprobado": true,
-      "ultimaAccion": "lecciones/docker-vs-podman.md",
-      "tokensUsados": 2100,
-      "tiempoMs": 2300,
-      "lastError": null
-    }
+    "AgenteCritico": { "status": "idle", "lastPulse": "2026-09-06T15:30:00.000Z", "aprobado": true, "ultimaAccion": "Mantenimiento quincenal - validación POD v1.0" },
+    "AgenteInvestigador": { "status": "idle", "lastPulse": "2026-09-06T15:30:00.000Z", "aprobado": true },
+    "AgenteRedactor": { "status": "idle", "lastPulse": "2026-09-06T15:30:00.000Z", "aprobado": true }
   }
 }
