@@ -1,4 +1,4 @@
-import { AgenteCritico } from '../core/AgenteCritico.js';
+import { AgenteAuditor } from '../core/AgenteAuditor.js';
 import { GeminiClient } from '../core/GeminiClient.js';
 
 const apiKey = process.env.GEMINI_API_KEY;
@@ -12,11 +12,11 @@ const constitucionProductiva =
   "Prioriza productividad. Si la consulta es trivial, responde brevemente y redirige obligatoriamente a una tarea productiva del usuario.";
 
 async function ejecutarPruebaReal() {
-  console.log("🌐 [Test Real] Iniciando integración End-to-End (AgenteCritico + GeminiClient)...\n");
+  console.log("🌐 [Test Real] Iniciando integración End-to-End (AgenteAuditor + GeminiClient)...\n");
 
   try {
     const client = new GeminiClient(apiKey);
-    const agente = new AgenteCritico(client, constitucionProductiva);
+    const agente = new AgenteAuditor(client, constitucionProductiva);
 
     const inputUsuario = { 
       seleccion: "cuéntame algo sobre el espacio", 

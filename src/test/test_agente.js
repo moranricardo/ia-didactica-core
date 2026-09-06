@@ -1,6 +1,6 @@
 import fs from 'fs';
 import path from 'path';
-import { AgenteCritico } from '../core/AgenteCritico.js';
+import { AgenteAuditor } from '../core/AgenteAuditor.js';
 
 const constitucionFlexible = 
   "Prioriza productividad. Si la consulta es trivial, responde brevemente y redirige obligatoriamente a una tarea productiva del usuario.";
@@ -14,7 +14,7 @@ const mockLlm = {
 };
 
 async function ejecutarPruebaAgente() {
-  console.log("🧪 [Test] Iniciando verificación de AgenteCritico...\n");
+  console.log("🧪 [Test] Iniciando verificación de AgenteAuditor...\n");
 
   let input = { prompt: "Cuéntame un chiste" };
   const inputPath = path.resolve(process.cwd(), 'input.json');
@@ -32,7 +32,7 @@ async function ejecutarPruebaAgente() {
   }
 
   try {
-    const agente = new AgenteCritico(mockLlm, constitucionFlexible);
+    const agente = new AgenteAuditor(mockLlm, constitucionFlexible);
 
     const resultado = await agente.procesar(input, { contexto: "prueba_integracion" }, (datos) => {
       return "Respuesta Didáctica: 'El clima está perfecto para trabajar. Por cierto, ¿cómo va el progreso en el repositorio?'";
